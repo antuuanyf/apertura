@@ -11,12 +11,6 @@
             Same library, called from a click handler. The host mounts itself.
             The normal Angular path is a component inside the dialog.
         </p>
-        <button class="install" type="button" (click)="copyInstall()">
-            <code>{{ copied() ? 'Copied' : 'npm install super-beautiful-modals' }}</code>
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
-                <path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z" />
-            </svg>
-        </button>
         <div class="row hero-actions">
             <button class="btn solid big raised" type="button" (click)="fromHero($event)">Press me</button>
             <button class="btn big square" type="button" (click)="noOrigin()">No origin</button>

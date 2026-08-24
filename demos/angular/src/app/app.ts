@@ -11,7 +11,6 @@ export class App {
     private readonly modal = inject(Modal)
 
     protected readonly dark = signal(prefersDark())
-    protected readonly copied = signal(false)
     protected readonly lastResult = signal<string | null>(null)
 
     constructor() {
@@ -21,16 +20,6 @@ export class App {
     protected toggleTheme() {
         this.dark.update((value) => !value)
         this.applyTheme()
-    }
-
-    protected async copyInstall() {
-        try {
-            await navigator.clipboard.writeText('npm install super-beautiful-modals')
-            this.copied.set(true)
-            setTimeout(() => this.copied.set(false), 1400)
-        } catch {
-            /* clipboard blocked */
-        }
     }
 
     protected fromButton(

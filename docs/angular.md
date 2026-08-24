@@ -14,29 +14,44 @@ signals, forms, or other components.
 
 ## Setup
 
-```sh
-npm install super-beautiful-modals
+Not on npm yet. Clone the repo and point TypeScript at `src/`, or run the
+Angular demo (`npm run demo:angular` from the repo root). The demo does both
+of these already.
+
+`src/` is JavaScript, so the app tsconfig needs `allowJs`. Alias the package
+name to the clone:
+
+```json
+"compilerOptions": {
+    "allowJs": true,
+    "paths": {
+        "super-beautiful-modals": ["path/to/super-beautiful-modals/src/index"]
+    }
+}
 ```
 
 Import the stylesheet **globally**. The layer sits outside every component, so
 `ViewEncapsulation` never reaches it.
 
-```css
-/* src/styles.css */
-@import 'super-beautiful-modals/style.css';
-```
-
-Or in `angular.json` / `project.json`:
+In `angular.json` / `project.json`:
 
 ```json
 "styles": [
-    "node_modules/super-beautiful-modals/dist/style.css",
+    "path/to/super-beautiful-modals/src/core/styles.css",
     "src/styles.css"
 ]
 ```
 
-Retheme with `--sbm-*` in the same global sheet. Do not add a class to
-`.sbm-shell`.
+Or in the global sheet:
+
+```css
+/* src/styles.css */
+@import 'path/to/super-beautiful-modals/src/core/styles.css';
+```
+
+From `demos/angular` those paths are `../../src/index` and
+`../../src/core/styles.css`. Retheme with `--sbm-*` in the same global sheet.
+Do not add a class to `.sbm-shell`.
 
 ## 1. A component inside the dialog
 

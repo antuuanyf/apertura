@@ -35,25 +35,6 @@ for (const input of document.querySelectorAll('[data-knob]')) {
     })
 }
 
-async function copyText(text, button) {
-    try {
-        await navigator.clipboard.writeText(text)
-        const previous = button.querySelector('code')?.textContent ?? button.textContent
-        if (button.querySelector('code')) button.querySelector('code').textContent = 'Copied'
-        else button.textContent = 'Copied'
-        setTimeout(() => {
-            if (button.querySelector('code')) button.querySelector('code').textContent = previous
-            else button.textContent = previous
-        }, 1400)
-    } catch {
-        /* clipboard blocked */
-    }
-}
-
-document.querySelectorAll('[data-copy]').forEach((button) => {
-    button.addEventListener('click', () => copyText(button.dataset.copy, button))
-})
-
 function report(value) {
     if (!resultEl) return
     const label = value === true ? 'confirmed'

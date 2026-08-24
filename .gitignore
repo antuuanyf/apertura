@@ -6,3 +6,4 @@ demos/angular/dist
 .DS_Store
 *.log
 .playwright-mcp
+.local

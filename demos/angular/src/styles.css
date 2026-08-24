@@ -127,25 +127,7 @@ h1 {
     color: var(--muted);
 }
 
-.hero-actions { margin-top: 22px; }
-
-.install {
-    display: inline-flex;
-    align-items: center;
-    gap: 14px;
-    margin-top: 36px;
-    padding: 11px 16px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    background: var(--surface);
-    color: var(--muted);
-    cursor: pointer;
-    transition: border-color 0.2s ease, color 0.2s ease;
-}
-
-.install code { color: var(--text); }
-.install:hover,
-.install:focus-visible { border-color: var(--muted); color: var(--text); }
+.hero-actions { margin-top: 36px; }
 
 .section {
     padding: 44px 0;
