@@ -1,0 +1,106 @@
+<div class="wrap">
+    <header class="hero">
+        <div class="hero-top">
+            <span class="tag">v0.1.0 · MIT · Angular · no adapter</span>
+            <button class="btn square" type="button" (click)="toggleTheme()">
+                {{ dark() ? 'Light' : 'Dark' }}
+            </button>
+        </div>
+        <h1>super-beautiful-modals</h1>
+        <p class="lead">
+            Same library, called from a click handler. The host mounts itself.
+            The normal Angular path is a component inside the dialog.
+        </p>
+        <button class="install" type="button" (click)="copyInstall()">
+            <code>{{ copied() ? 'Copied' : 'npm install super-beautiful-modals' }}</code>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                <path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z" />
+            </svg>
+        </button>
+        <div class="row hero-actions">
+            <button class="btn solid big raised" type="button" (click)="fromHero($event)">Press me</button>
+            <button class="btn big square" type="button" (click)="noOrigin()">No origin</button>
+        </div>
+    </header>
+
+    <section class="section">
+        <h2>From a click</h2>
+        <p class="muted hint">
+            Pass <code>event.currentTarget</code>, not <code>event.target</code>.
+            A click on an icon inside the button would otherwise morph the icon.
+        </p>
+        <div class="body row">
+            <button class="btn" type="button" (click)="fromButton($event, 'From a pill', 'Same radius, same colour, frame zero.')">Pill</button>
+            <button class="btn square" type="button" (click)="fromButton($event, 'From a square', 'The morph reads the button’s computed style.')">Square</button>
+            <button class="btn raised" type="button" (click)="fromButton($event, 'From a raised button', 'Shadow interpolates from a transparent cast, not from none.')">Raised</button>
+            <button class="btn" type="button" (click)="noOrigin()">No origin</button>
+        </div>
+        <div class="snippet"><pre><code>const ok = await modal.open(&#123;
+    origin: event.currentTarget as HTMLElement,
+    title: 'Delete this movement?',
+    variant: 'danger',
+&#125;)</code></pre></div>
+    </section>
+
+    <section class="section">
+        <h2>From a template ref</h2>
+        <p class="muted hint">
+            Same call, when the opener is not the click target.
+            <code>#opener</code> is an <code>HTMLElement</code>. Keep it in the DOM until close.
+        </p>
+        <div class="body row">
+            <button #opener class="btn solid" type="button" (click)="fromTemplateRef(opener)">Open from #opener</button>
+        </div>
+        <div class="snippet"><pre><code>&lt;button #opener (click)="onOpen(opener)"&gt;Open&lt;/button&gt;
+
+onOpen(origin: HTMLElement) &#123;
+    return modal.open(&#123; origin, title: 'Hello' &#125;)
+&#125;</code></pre></div>
+    </section>
+
+    <section class="section">
+        <h2>Confirm</h2>
+        <p class="muted hint">
+            The default card is a title, a description and two actions.
+            Confirm resolves <code>true</code>, cancel <code>false</code>,
+            Escape or overlay <code>undefined</code>. After <code>await</code>, write
+            a signal — this app is zoneless.
+        </p>
+        <div class="body row">
+            <button class="btn tone-error" type="button" (click)="confirmDanger($event)">Delete</button>
+            <button class="btn" type="button" (click)="confirmNeutral($event)">Neutral</button>
+            <button class="btn" type="button" (click)="sticky($event)">Not dismissible</button>
+        </div>
+        <p class="muted result">{{ lastResult() }}</p>
+    </section>
+
+    <section class="section">
+        <h2>An Angular component inside</h2>
+        <p class="muted hint">
+            This is the normal Angular path. Put the <code>createComponent</code>
+            bridge on an injectable once, then every dialog is a component and a click.
+        </p>
+        <div class="body row">
+            <button class="btn" type="button" (click)="openPlaylist($event)">Name a playlist</button>
+        </div>
+        <div class="snippet"><pre><code>const name = await this.modal.openComponent(PlaylistForm, &#123;
+    origin: event.currentTarget as HTMLElement,
+&#125;)</code></pre></div>
+    </section>
+
+    <section class="section">
+        <h2>Nested</h2>
+        <p class="muted hint">
+            A dialog can open another. The one underneath scales back and
+            goes inert until the top one leaves. The inner confirm morphs
+            out of the Angular button.
+        </p>
+        <div class="body row">
+            <button class="btn solid" type="button" (click)="nested($event)">Open a stack</button>
+        </div>
+    </section>
+
+    <footer class="footer muted">
+        <span>MIT · see <a href="https://github.com/antuuanyf/super-beautiful-modals/blob/main/docs/angular.md">docs/angular.md</a></span>
+    </footer>
+</div>

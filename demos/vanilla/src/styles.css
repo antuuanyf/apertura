@@ -1,0 +1,244 @@
+:root {
+    --bg: #f0eee8;
+    --surface: #ffffff;
+    --line: #ddd8ce;
+    --text: #1a1a18;
+    --muted: #6e6b64;
+    --accent: #1a1a18;
+    --accent-text: #ffffff;
+    --code-bg: #e7e3da;
+    --tone-error: #b3261e;
+    --tone-on: #ffffff;
+    --radius: 14px;
+    color-scheme: light;
+
+    --sbm-bg: #ffffff;
+    --sbm-fg: #1b1b1f;
+    --sbm-muted: #5c5c66;
+    --sbm-shadow: 0 8px 40px rgba(0, 0, 0, 0.18), 0 0 1px rgba(0, 0, 0, 0.22);
+    --sbm-overlay: color-mix(in srgb, #0c0c10 42%, transparent);
+    --sbm-btn-bg: #1b1b1f;
+    --sbm-btn-fg: #ffffff;
+    --sbm-danger-bg: #b3261e;
+    --sbm-danger-fg: #ffffff;
+}
+
+:root[data-theme='dark'] {
+    --bg: #0e0e10;
+    --surface: #17171a;
+    --line: #26262b;
+    --text: #ececef;
+    --muted: #8d8d96;
+    --accent: #ececef;
+    --accent-text: #0e0e10;
+    --code-bg: #1c1c20;
+    --tone-error: #ef6a5e;
+    --tone-on: #10100f;
+    color-scheme: dark;
+
+    --sbm-bg: #202026;
+    --sbm-fg: #f2f2f5;
+    --sbm-muted: #b4b4bc;
+    --sbm-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.14);
+    --sbm-overlay: color-mix(in srgb, #000000 62%, transparent);
+    --sbm-btn-bg: #ececef;
+    --sbm-btn-fg: #0e0e10;
+    --sbm-danger-bg: #ef6a5e;
+    --sbm-danger-fg: #1a0605;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+        --bg: #0e0e10;
+        --surface: #17171a;
+        --line: #26262b;
+        --text: #ececef;
+        --muted: #8d8d96;
+        --accent: #ececef;
+        --accent-text: #0e0e10;
+        --code-bg: #1c1c20;
+        --tone-error: #ef6a5e;
+        --tone-on: #10100f;
+        color-scheme: dark;
+
+        --sbm-bg: #202026;
+        --sbm-fg: #f2f2f5;
+        --sbm-muted: #b4b4bc;
+        --sbm-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.14);
+        --sbm-overlay: color-mix(in srgb, #000000 62%, transparent);
+        --sbm-btn-bg: #ececef;
+        --sbm-btn-fg: #0e0e10;
+        --sbm-danger-bg: #ef6a5e;
+        --sbm-danger-fg: #1a0605;
+    }
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.4s ease, color 0.4s ease;
+}
+
+h1, h2, h3 { font-weight: 600; letter-spacing: -0.02em; margin: 0; }
+
+code, pre { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; }
+
+button { font-family: inherit; }
+
+.wrap {
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 0 24px 160px;
+}
+
+.hero { padding: 72px 0 48px; }
+
+.hero-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 56px;
+}
+
+.tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+}
+
+h1 {
+    font-size: clamp(38px, 7vw, 62px);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+}
+
+.lead {
+    max-width: 56ch;
+    margin: 20px 0 0;
+    font-size: 17px;
+    color: var(--muted);
+}
+
+.hero-actions { margin-top: 22px; }
+
+.install {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 36px;
+    padding: 11px 16px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.install code { color: var(--text); }
+.install:hover,
+.install:focus-visible { border-color: var(--muted); color: var(--text); }
+
+.section {
+    padding: 44px 0;
+    border-top: 1px solid var(--line);
+}
+
+h2 { font-size: 21px; }
+
+.hint {
+    margin: 6px 0 0;
+    max-width: 62ch;
+    font-size: 14px;
+}
+
+.body { margin-top: 20px; }
+
+.snippet {
+    margin-top: 18px;
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+pre {
+    margin: 0;
+    padding: 16px 18px;
+    overflow-x: auto;
+    color: var(--text);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0, 0, 0.4, 1), border-color 0.2s ease;
+}
+
+.btn:hover { transform: translateY(-1px); border-color: var(--muted); }
+.btn:active { transform: translateY(0); }
+.btn.solid { background: var(--accent); color: var(--accent-text); border-color: transparent; }
+.btn.tone-error { background: var(--tone-error); color: var(--tone-on); border-color: transparent; }
+.btn.square { border-radius: 10px; }
+.btn.raised { box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16); border-color: transparent; }
+.btn.big { padding: 14px 28px; font-size: 15px; }
+
+.row { display: flex; flex-wrap: wrap; gap: 10px; }
+.muted { color: var(--muted); }
+.result { margin: 16px 0 0; font-size: 13px; min-height: 1.2em; }
+
+.knobs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 22px 32px;
+    margin-top: 20px;
+}
+
+.knob { display: flex; flex-direction: column; gap: 6px; }
+.top { display: flex; justify-content: space-between; align-items: baseline; }
+.label { font-size: 13px; font-weight: 500; }
+.value { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); }
+.knob .hint { font-size: 11px; }
+.knob input[type='range'] { width: 100%; accent-color: var(--text); }
+
+.playground-actions { margin-top: 26px; }
+
+.footer {
+    padding: 40px 0;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+}
+
+.footer a { color: inherit; }
+
+.demo-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+    border-radius: 12px;
+    background: color-mix(in srgb, currentColor 5%, transparent);
+    color: inherit;
+    font: inherit;
+    outline: none;
+}
+
+.demo-input:focus {
+    border-color: color-mix(in srgb, currentColor 40%, transparent);
+}

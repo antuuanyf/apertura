@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>super-beautiful-modals</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+</head>
+<body>
+    <div class="wrap">
+        <header class="hero">
+            <div class="hero-top">
+                <span class="tag">v0.1.0 · MIT · vanilla · no dependencies</span>
+                <button class="btn square" type="button" data-theme-toggle>Dark</button>
+            </div>
+            <h1>super-beautiful-modals</h1>
+            <p class="lead">
+                Dialogs where the button you pressed becomes the dialog. The same
+                physical springs as the toast package, plus the flight back in.
+            </p>
+            <button class="install" type="button" data-copy="npm install super-beautiful-modals">
+                <code>npm install super-beautiful-modals</code>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                    <path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z" />
+                </svg>
+            </button>
+            <div class="row hero-actions">
+                <button class="btn solid big raised" type="button" data-open="hero">Press me</button>
+                <button class="btn big square" type="button" data-open="no-origin">No origin</button>
+            </div>
+        </header>
+
+        <section class="section">
+            <h2>The morph</h2>
+            <p class="muted hint">
+                Hand the dialog the element that triggered it and it grows out of it.
+                Close it and it grows back in. Without an origin, it fades in from the centre.
+            </p>
+            <div class="body row">
+                <button class="btn" type="button" data-open="pill">Pill</button>
+                <button class="btn square" type="button" data-open="square">Square</button>
+                <button class="btn raised" type="button" data-open="raised">Raised</button>
+                <button class="btn" type="button" data-open="no-origin">No origin</button>
+            </div>
+            <div class="snippet"><pre><code>const ok = await modal.open({
+    origin: event.currentTarget,
+    title: 'Delete this movement?',
+    variant: 'danger',
+})</code></pre></div>
+        </section>
+
+        <section class="section">
+            <h2>Confirm</h2>
+            <p class="muted hint">
+                The default card is a title, a description and two actions.
+                Confirm resolves <code>true</code>, cancel <code>false</code>,
+                Escape or overlay <code>undefined</code>.
+            </p>
+            <div class="body row">
+                <button class="btn tone-error" type="button" data-open="danger">Delete</button>
+                <button class="btn" type="button" data-open="neutral">Neutral</button>
+                <button class="btn" type="button" data-open="sticky">Not dismissible</button>
+            </div>
+            <p class="muted result" data-result></p>
+        </section>
+
+        <section class="section">
+            <h2>Your own content</h2>
+            <p class="muted hint">
+                Pass a render function and the body is yours. Call <code>close(value)</code>
+                with whatever the caller is waiting for.
+            </p>
+            <div class="body row">
+                <button class="btn" type="button" data-open="form">Name a playlist</button>
+            </div>
+            <div class="snippet"><pre><code>modal.open({
+    origin: event.currentTarget,
+    render(body, { close }) {
+        const input = document.createElement('input')
+        const save = document.createElement('button')
+        save.onclick = () => close(input.value)
+        body.append(input, save)
+    },
+})</code></pre></div>
+        </section>
+
+        <section class="section">
+            <h2>Nested</h2>
+            <p class="muted hint">
+                A dialog can open another. The one underneath scales back and
+                goes inert until the top one leaves.
+            </p>
+            <div class="body row">
+                <button class="btn solid" type="button" data-open="nested">Open a stack</button>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Playground</h2>
+            <p class="muted hint">
+                The morph is a simulation, not a baked curve. Lower damping bounces
+                more; velocity is the kick that bends the path.
+            </p>
+            <div class="knobs">
+                <label class="knob">
+                    <span class="top"><span class="label">stiffness</span><span class="value" data-knob-value="stiffness">144</span></span>
+                    <input type="range" data-knob="stiffness" min="40" max="400" step="4" value="144" />
+                    <span class="muted hint">how hard it pulls</span>
+                </label>
+                <label class="knob">
+                    <span class="top"><span class="label">damping</span><span class="value" data-knob-value="damping">14</span></span>
+                    <input type="range" data-knob="damping" min="6" max="40" value="14" />
+                    <span class="muted hint">lower bounces more</span>
+                </label>
+                <label class="knob">
+                    <span class="top"><span class="label">velocity</span><span class="value" data-knob-value="velocity">2400</span></span>
+                    <input type="range" data-knob="velocity" min="0" max="4000" step="100" value="2400" />
+                    <span class="muted hint">the initial kick</span>
+                </label>
+            </div>
+            <div class="row playground-actions">
+                <button class="btn solid" type="button" data-open="hero">Fire one</button>
+            </div>
+        </section>
+
+        <footer class="footer muted">
+            <span>MIT · motion engine from <a href="https://github.com/srdavo/super-beautiful-toast">super-beautiful-toast</a></span>
+        </footer>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

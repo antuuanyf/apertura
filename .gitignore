@@ -1,0 +1,8 @@
+.angular
+node_modules
+dist
+demos/vanilla/dist
+demos/angular/dist
+.DS_Store
+*.log
+.playwright-mcp

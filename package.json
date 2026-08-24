@@ -1,0 +1,59 @@
+{
+  "name": "super-beautiful-modals",
+  "version": "0.1.0",
+  "description": "Modals for the web where the button that opens them becomes the dialog. Physical springs, reverse morph on close. No dependencies. Vanilla JS.",
+  "type": "module",
+  "types": "./index.d.ts",
+  "main": "./dist/super-beautiful-modals.js",
+  "module": "./dist/super-beautiful-modals.js",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./dist/super-beautiful-modals.js"
+    },
+    "./style.css": "./dist/style.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "index.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "demo": "npm --prefix demos/vanilla run dev",
+    "demo:vanilla": "npm --prefix demos/vanilla run dev",
+    "demo:angular": "npm --prefix demos/angular run start",
+    "demo:build": "npm run build && npm --prefix demos/vanilla run build",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "modal",
+    "dialog",
+    "overlay",
+    "morph",
+    "shared-element",
+    "spring",
+    "animation",
+    "vanilla",
+    "zero-dependencies"
+  ],
+  "author": "Antonio Monreal Diaz (https://github.com/antuuanyf)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antuuanyf/super-beautiful-modals.git"
+  },
+  "bugs": {
+    "url": "https://github.com/antuuanyf/super-beautiful-modals/issues"
+  },
+  "homepage": "https://github.com/antuuanyf/super-beautiful-modals#readme",
+  "devDependencies": {
+    "vite": "^7.3.1"
+  }
+}
