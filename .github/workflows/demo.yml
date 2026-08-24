@@ -1,0 +1,70 @@
+# Builds both demos and publishes them to GitHub Pages on every push to main.
+#
+# Vanilla → https://antuuanyf.github.io/super-beautiful-modals/
+# Angular → https://antuuanyf.github.io/super-beautiful-modals/angular/
+#
+# Both demos resolve the library to ../../src, so what gets deployed is always
+# the current source rather than a stale dist.
+
+name: demo
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            demos/vanilla/package-lock.json
+            demos/angular/package-lock.json
+
+      # Installing the package also builds it, through its prepare script, so a
+      # library that does not compile fails here instead of shipping.
+      - run: npm ci
+      - run: npm ci --prefix demos/vanilla
+      - run: npm ci --prefix demos/angular
+      - run: npm run build --prefix demos/vanilla
+      - run: npm --prefix demos/angular exec ng build -- --base-href ./
+
+      - name: Assemble site
+        run: |
+          test -f demos/vanilla/dist/index.html
+          test -f demos/angular/dist/angular/browser/index.html
+          mkdir -p site/angular
+          cp -R demos/vanilla/dist/. site/
+          cp -R demos/angular/dist/angular/browser/. site/angular/
+          touch site/.nojekyll
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -9,8 +9,16 @@ path is a spring simulation, adapted from the motion engine in
 
 Vanilla JS. No dependencies. No host component to mount.
 
+**Demo:** [vanilla](https://antuuanyf.github.io/super-beautiful-modals/) · [Angular](https://antuuanyf.github.io/super-beautiful-modals/angular/)
+
+Not on npm yet. Clone the repo and import from `src/`, or run the demos:
+
 ```sh
-npm install super-beautiful-modals
+git clone https://github.com/antuuanyf/super-beautiful-modals.git
+cd super-beautiful-modals
+npm install
+npm run demo            # vanilla  → http://localhost:5173
+npm run demo:angular    # Angular  → http://localhost:4200
 ```
 
 ## Quick start
@@ -36,13 +44,6 @@ resolves `undefined`.
 
 Without an `origin` the dialog fades and scales in from the centre, which is
 the right thing when nothing on screen caused it.
-
-## Demos
-
-```sh
-npm run demo            # vanilla  → http://localhost:5173
-npm run demo:angular    # Angular  → http://localhost:4200
-```
 
 ## Custom content
 
