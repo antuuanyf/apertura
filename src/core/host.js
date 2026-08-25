@@ -9,8 +9,12 @@ import { fillBody } from './card.js'
 import { createPageLock, focusFirst } from './lock.js'
 import { morphFromOrigin, morphToOrigin, restoreOrigin, MORPH_DEFAULTS } from './morph.js'
 import { motionOf, killMotion } from './motion/element.js'
+import { createMotion, spring } from './motion/engine.js'
 import { Easing, springEase } from './motion/easing.js'
 import { prefersReducedMotion } from './env.js'
+import { resolveMorph, applySize } from './presets.js'
+import { layoutSlot, resolvePlacement, trackOrigin } from './placement.js'
+import { attachDismissGesture } from './gesture.js'
 import './styles.css'
 
 export const HOST_DEFAULTS = {
@@ -25,6 +29,9 @@ export const HOST_DEFAULTS = {
     underScale: 0.96,
     underY: 10,
     underDuration: 0.4,
+    underSpring: { stiffness: 180, damping: 22, velocity: 0 },
+    placementGap: 8,
+    placementPadding: 16,
     morph: MORPH_DEFAULTS,
 }
 
@@ -40,6 +47,7 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
         ...HOST_DEFAULTS,
         ...options,
         morph: { ...MORPH_DEFAULTS, ...(options.morph ?? {}) },
+        underSpring: { ...HOST_DEFAULTS.underSpring, ...(options.underSpring ?? {}) },
     }
     const lock = createPageLock()
     const nodes = new Map()
@@ -49,9 +57,14 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
     let onRemoved = null
 
     function configure(patch = {}) {
-        const { morph, ...rest } = patch
+        const { morph, underSpring, ...rest } = patch
         Object.assign(config, rest)
         if (morph) Object.assign(config.morph, morph)
+        if (underSpring) Object.assign(config.underSpring, underSpring)
+    }
+
+    function morphFor(item) {
+        return resolveMorph(item?.morph, config.morph)
     }
 
     function targetOf() {
@@ -88,10 +101,10 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
         live.forEach(({ item, node }, index) => {
             const top = index === live.length - 1
             node.itemEl.inert = !top
-            if (item.id === skipId || node.morphing) return
+            if (item.id === skipId || node.morphing || node.dragging) return
             motionOf(node.dialog).to(
                 top ? { scale: 1, y: 0 } : { scale: config.underScale, y: config.underY },
-                { duration: config.underDuration, ease: Easing.easeOutCubic },
+                { spring: config.underSpring },
             )
         })
     }
@@ -133,6 +146,120 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
         })
     }
 
+    function place(node, item) {
+        const placement = resolvePlacement(item.placement, item.origin)
+        node.placement = placement
+        applySize(node.dialog, item.size)
+        if (placement === 'bottom' && item.size == null) {
+            node.dialog.style.setProperty('--apr-max-width', 'min(480px, calc(100vw - 24px))')
+        }
+        layoutSlot(node.dialog, node.itemEl, item.origin, placement, {
+            gap: config.placementGap,
+            padding: config.placementPadding,
+        })
+    }
+
+    function bindAria(dialog, body, item) {
+        dialog.removeAttribute('aria-labelledby')
+        dialog.removeAttribute('aria-label')
+        if (item.labelledBy) {
+            dialog.setAttribute('aria-labelledby', item.labelledBy)
+            return
+        }
+        const title = body.querySelector('.apr-title')
+        if (title?.id) dialog.setAttribute('aria-labelledby', title.id)
+        else if (item.ariaLabel) dialog.setAttribute('aria-label', item.ariaLabel)
+        else if (item.title) dialog.setAttribute('aria-label', item.title)
+    }
+
+    function startTracking(node, item) {
+        node.untrack?.()
+        node.untrack = null
+        if (node.placement === 'center' || !item.origin) return
+
+        node.untrack = trackOrigin(item.origin, () => {
+            if (node.leaving) {
+                const target = node.closeTarget ?? item.origin
+                node.morph?.retarget?.(target)
+                return
+            }
+            if (node.morphing || node.dragging) return
+            const current = store.get(item.id)
+            if (!current || current.closing) return
+            layoutSlot(node.dialog, node.itemEl, current.origin, node.placement, {
+                gap: config.placementGap,
+                padding: config.placementPadding,
+            })
+        })
+    }
+
+    function attachGesture(node, item) {
+        node.detachGesture?.()
+        node.detachGesture = attachDismissGesture({
+            dialog: node.dialog,
+            item,
+            store,
+            placement: node.placement,
+            origin: item.origin,
+            isBusy: () => node.morphing || node.leaving,
+            onPull: (active) => { node.dragging = active },
+        })
+    }
+
+    function springHeight(node, from) {
+        const shell = node.shell
+        const to = {
+            width: shell.getBoundingClientRect().width,
+            height: shell.getBoundingClientRect().height,
+        }
+        if (Math.abs(from.width - to.width) < 1 && Math.abs(from.height - to.height) < 1) return
+
+        shell.style.width = `${from.width}px`
+        shell.style.height = `${from.height}px`
+        node.sizeMotion?.stop()
+        const pending = new Set(['width', 'height'])
+        const motion = createMotion({ width: from.width, height: from.height }, {
+            onChange(key, value) {
+                shell.style[key] = `${value}px`
+            },
+            onSettle(key) {
+                pending.delete(key)
+                if (pending.size > 0 || node.sizeMotion !== motion) return
+                shell.style.width = ''
+                shell.style.height = ''
+                node.sizeMotion = null
+            },
+        })
+        node.sizeMotion = motion
+        const hop = spring({ stiffness: 180, damping: 22, velocity: 0, restDelta: 0.5, restSpeed: 4 })
+        motion.animate({ width: to.width, height: to.height }, { width: hop, height: hop })
+    }
+
+    function refresh(item) {
+        const node = nodes.get(item.id)
+        if (!node || node.leaving || node.morphing) return
+        if (node.rev === item.rev) return
+        node.rev = item.rev
+
+        const from = {
+            width: node.shell.getBoundingClientRect().width,
+            height: node.shell.getBoundingClientRect().height,
+        }
+        node.shell.style.width = `${from.width}px`
+        node.shell.style.height = `${from.height}px`
+
+        node.cleanupContent?.()
+        node.body.replaceChildren()
+        const close = (result) => store.close(item.id, result)
+        node.cleanupContent = fillBody(node.body, item, { close, id: item.id })
+        bindAria(node.dialog, node.body, item)
+        node.origin = item.origin
+        place(node, item)
+        startTracking(node, item)
+        attachGesture(node, item)
+        springHeight(node, from)
+    }
+
     function enter(item) {
         ensureMounted()
         if (nodes.has(item.id)) return
@@ -161,15 +288,7 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
 
         const close = (result) => store.close(item.id, result)
         const cleanupContent = fillBody(body, item, { close, id: item.id })
-
-        if (item.labelledBy) {
-            dialog.setAttribute('aria-labelledby', item.labelledBy)
-        } else {
-            const title = body.querySelector('.apr-title')
-            if (title?.id) dialog.setAttribute('aria-labelledby', title.id)
-            else if (item.ariaLabel) dialog.setAttribute('aria-label', item.ariaLabel)
-            else if (item.title) dialog.setAttribute('aria-label', item.title)
-        }
+        bindAria(dialog, body, item)
 
         shell.append(body)
         dialog.append(shell)
@@ -193,21 +312,35 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
             originHidden: false,
             morphing: false,
             leaving: false,
+            dragging: false,
             morph: null,
+            sizeMotion: null,
+            untrack: null,
+            detachGesture: null,
+            closeTarget: null,
+            placement: 'center',
+            rev: item.rev ?? 0,
         }
         nodes.set(item.id, node)
+        place(node, item)
 
         if (nodes.size === 1) lock.acquire(layer, item.origin)
         motionOf(overlay).set({ opacity: 0 })
         void itemEl.offsetWidth
+        place(node, item)
 
         const origin = item.origin
         const morph = canMorphFrom(origin)
+        const morphOptions = morphFor(item)
 
         const finish = () => {
             node.morphing = false
             node.morph = null
+            startTracking(node, item)
+            attachGesture(node, item)
             restack()
+            const latest = store.get(item.id)
+            if (latest && !latest.closing && latest.rev !== node.rev) refresh(latest)
             if (!node.leaving) focusFirst(dialog)
         }
 
@@ -220,7 +353,7 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
                 bodyEl: body,
                 origin,
                 originStyle: item.originStyle,
-                options: config.morph,
+                options: morphOptions,
                 onSettle: finish,
             })
         } else {
@@ -239,41 +372,60 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
         node.morph?.settle()
         node.morph = null
         node.morphing = false
+        restack()
+        node.detachGesture?.()
+        node.detachGesture = null
+        node.sizeMotion?.stop()
+        node.sizeMotion = null
 
         const { overlay, dialog, shell, body, origin, originHidden } = node
-        const reverse = originHidden && canMorphFrom(origin)
+        const morphOptions = morphFor(item)
+        const closeTarget = canMorphFrom(item.closeOrigin) ? item.closeOrigin : origin
+        const reverse = originHidden && canMorphFrom(closeTarget)
+        node.closeTarget = closeTarget
 
         let finished = false
         const finish = () => {
             if (finished) return
             finished = true
             clearTimeout(safety)
+            node.untrack?.()
+            node.untrack = null
             node.cleanupContent?.()
             killMotion(overlay)
             killMotion(dialog)
             node.itemEl.remove()
             nodes.delete(item.id)
             const result = store.remove(item.id)
-            if (originHidden && origin) restoreOrigin(origin, { instant: true })
+            if (origin) restoreOrigin(origin, { instant: true })
+            if (closeTarget && closeTarget !== origin) restoreOrigin(closeTarget, { instant: true })
             if (nodes.size === 0) lock.release()
             else restack()
             onRemoved?.(item.id, result)
         }
-        const safety = setTimeout(finish, (config.morph.closeMaxDuration ?? 480) + 80)
+        const safety = setTimeout(finish, (morphOptions.closeMaxDuration ?? 480) + 80)
 
         fadeOverlay(overlay, 0, reverse ? config.overlayDuration * 0.8 : config.exitDuration)
 
         if (reverse) {
+            if (closeTarget !== origin && originHidden && origin) {
+                restoreOrigin(origin, { instant: true })
+                node.originHidden = false
+                hideOriginForClose(closeTarget)
+            }
             node.morph = morphToOrigin({
                 dialogEl: dialog,
                 shellEl: shell,
                 bodyEl: body,
-                origin,
-                originStyle: item.originStyle,
-                options: config.morph,
-                onSettle: finish,
+                origin: closeTarget,
+                originStyle: closeTarget === origin ? item.originStyle : null,
+                options: morphOptions,
+                onSettle: () => {
+                    if (closeTarget !== origin) restoreOrigin(closeTarget, { instant: true })
+                    finish()
+                },
             })
-            node.originHidden = false
+            if (closeTarget === origin) node.originHidden = false
             return
         }
 
@@ -284,10 +436,18 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
         slideOut(dialog, finish)
     }
 
+    function hideOriginForClose(element) {
+        if (!(element instanceof HTMLElement)) return
+        element.style.transition = 'none'
+        element.style.opacity = '0'
+        element.style.pointerEvents = 'none'
+    }
+
     function sync(items = store.getItems()) {
         ensureMounted()
         for (const item of items) {
             if (!item.closing && !nodes.has(item.id)) enter(item)
+            else if (!item.closing && nodes.has(item.id)) refresh(item)
             if (item.closing && nodes.has(item.id)) leave(item)
         }
     }
@@ -304,6 +464,9 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
         unsubscribe = null
         for (const node of [...nodes.values()]) {
             node.morph?.settle()
+            node.untrack?.()
+            node.detachGesture?.()
+            node.sizeMotion?.stop()
             node.cleanupContent?.()
             if (node.originHidden && node.origin) restoreOrigin(node.origin)
             killMotion(node.overlay)

@@ -34,6 +34,11 @@
     --apr-btn-fg: #ffffff;
     --apr-danger-bg: #b3261e;
     --apr-danger-fg: #ffffff;
+    --apr-success-bg: #0f7b4c;
+    --apr-success-fg: #ffffff;
+    --apr-warning-bg: #9a5b00;
+    --apr-warning-fg: #ffffff;
+    --apr-inplace-overlay: color-mix(in srgb, #0c0c10 22%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -47,6 +52,11 @@
         --apr-btn-fg: #0e0e10;
         --apr-danger-bg: #ef6a5e;
         --apr-danger-fg: #1a0605;
+        --apr-success-bg: #5dcea0;
+        --apr-success-fg: #052016;
+        --apr-warning-bg: #f0b45a;
+        --apr-warning-fg: #1a0f02;
+        --apr-inplace-overlay: color-mix(in srgb, #000000 36%, transparent);
     }
 }
 
@@ -66,6 +76,15 @@
     pointer-events: none;
 }
 
+.apr-item-placed {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.apr-item-inplace .apr-overlay {
+    background: var(--apr-inplace-overlay);
+}
+
 .apr-overlay {
     position: absolute;
     inset: 0;
@@ -82,6 +101,12 @@
     pointer-events: auto;
     max-width: var(--apr-max-width);
     outline: none;
+    touch-action: pan-y;
+}
+
+.apr-sheet .apr-shell {
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
 }
 
 .apr-shell {
@@ -172,6 +197,31 @@
 .apr-btn-danger {
     background: var(--apr-danger-bg);
     color: var(--apr-danger-fg);
+}
+
+.apr-btn-success {
+    background: var(--apr-success-bg);
+    color: var(--apr-success-fg);
+}
+
+.apr-btn-warning {
+    background: var(--apr-warning-bg);
+    color: var(--apr-warning-fg);
+}
+
+.apr-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+    border-radius: 12px;
+    background: color-mix(in srgb, currentColor 5%, transparent);
+    color: inherit;
+    font: inherit;
+    outline: none;
+}
+
+.apr-input:focus {
+    border-color: color-mix(in srgb, currentColor 40%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {

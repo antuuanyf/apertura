@@ -15,13 +15,16 @@ src/core/
   store.js         what dialogs exist. Immutable state, observable.
   morph.js         button → dialog and dialog → button.
   lock.js          inert, scroll lock, restore focus.
-  card.js          default chrome (title, copy, actions).
+  card.js          default chrome (title, copy, actions, prompt).
   host.js          DOM, overlay, enter, leave, nested stack.
+  placement.js     slot layout for center / anchor / inplace / bottom.
+  gesture.js       drag-to-dismiss.
+  presets.js       snappy / floaty / cinematic, size, variant classes.
   env.js           isBrowser, prefersReducedMotion.
   styles.css       prefixed apr-, tokens on :where(:root).
   motion/          copied from super-beautiful-toast.
                    engine, easing, element. Do not import from the toast package.
-src/index.js       createModal() / modal. Auto-mounts on first open().
+src/index.js       createModal() / the shared `modal` instance.
 ```
 
 `motion/` is a copy, not a workspace dependency. Two rAF loops on a page that
@@ -58,10 +61,18 @@ If the origin has been unmounted, disconnected, or has a zero rect (display
 none, off-screen collapsed), close falls back to a fade. Same if the user
 asked for reduced motion.
 
-Close is slightly more damped (`closeDamping: 20`, `closeVelocity: 1400`) so
-the shell settles into the button instead of overshooting it. Size still lands
-fast; position still springs. Content hides in ~160ms so a form is not seen
-squashing.
+Close is slightly more damped (`closeDamping: 20`, `closeSizeDamping: 26`) so
+the shell settles into the button instead of overshooting it. Position still
+gets the launch kick; size springs do not (a kick on width explodes the box).
+Roundness stays a short tween so a pill does not oscillate. Content unblurs
+and fades in during the flight (~150ms delay, then 320ms). On close, content
+hides in ~160ms so a form is not seen squashing.
+
+`placement` is layout, not a second morph. The slot is positioned with
+`top`/`left` on `.apr-dialog` (or flex-centered for `center`) *before*
+`freezeSlot` measures. Anchor, inplace and bottom track the origin while
+open, and retarget x/y during the reverse morph if it moves. Never put a
+CSS transform on `.apr-dialog` to place it.
 
 ## Overlay
 

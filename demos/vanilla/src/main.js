@@ -184,6 +184,160 @@ const actions = {
             body.append(card)
         },
     }),
+    prompt: async (origin) => {
+        const name = await modal.prompt({
+            origin,
+            title: 'Name the playlist',
+            placeholder: 'Evening mix',
+        })
+        report(name)
+    },
+    alert: async (origin) => {
+        await modal.alert({
+            origin,
+            title: 'Invite sent',
+            description: 'They will see it the next time they open the app.',
+        })
+        report(true)
+    },
+    success: (origin) => modal.open({
+        origin,
+        title: 'Saved',
+        description: 'The playlist is on this device.',
+        confirmLabel: 'OK',
+        cancelLabel: null,
+        variant: 'success',
+        morph: 'snappy',
+    }),
+    warning: (origin) => modal.open({
+        origin,
+        title: 'This folder is shared',
+        description: 'Anyone with the link can still open it.',
+        confirmLabel: 'Got it',
+        cancelLabel: null,
+        variant: 'warning',
+    }),
+    snappy: (origin) => modal.open({
+        origin,
+        title: 'Snappy',
+        description: 'Higher stiffness, less bounce, a shorter kick.',
+        confirmLabel: 'OK',
+        cancelLabel: null,
+        morph: 'snappy',
+        size: 'sm',
+    }),
+    floaty: (origin) => modal.open({
+        origin,
+        title: 'Floaty',
+        description: 'Softer springs and a bigger launch kick.',
+        confirmLabel: 'OK',
+        cancelLabel: null,
+        morph: 'floaty',
+    }),
+    wide: (origin) => modal.open({
+        origin,
+        title: 'A wider dialog',
+        description: 'size: lg overrides the default max-width token for this call only.',
+        confirmLabel: 'OK',
+        cancelLabel: null,
+        size: 'lg',
+    }),
+    menu: (origin) => modal.open({
+        origin,
+        placement: 'anchor',
+        size: 'sm',
+        morph: 'snappy',
+        ariaLabel: 'Account menu',
+        render(body, { close }) {
+            const card = document.createElement('div')
+            card.className = 'apr-card'
+            const title = document.createElement('h2')
+            title.className = 'apr-title'
+            title.textContent = 'Account'
+            const actionsRow = document.createElement('div')
+            actionsRow.className = 'apr-actions'
+            actionsRow.style.flexDirection = 'column'
+            actionsRow.style.alignItems = 'stretch'
+            for (const label of ['Profile', 'Preferences', 'Sign out']) {
+                const button = document.createElement('button')
+                button.type = 'button'
+                button.className = label === 'Sign out' ? 'apr-btn apr-btn-solid' : 'apr-btn apr-btn-ghost'
+                button.textContent = label
+                button.addEventListener('click', () => close(label))
+                actionsRow.append(button)
+            }
+            card.append(title, actionsRow)
+            body.append(card)
+        },
+    }).then(report),
+    sheet: (origin) => modal.open({
+        origin,
+        placement: 'bottom',
+        title: 'Move to',
+        description: 'Drag down to dismiss. The morph still starts from the button.',
+        confirmLabel: 'Archive',
+        cancelLabel: 'Cancel',
+    }),
+    card: (origin) => {
+        const name = origin.dataset.card ?? 'Folder'
+        return modal.open({
+            origin,
+            placement: 'inplace',
+            size: 'sm',
+            title: name,
+            description: 'This card expanded in place. Scroll the page and it follows the hole it left.',
+            confirmLabel: 'Open',
+            cancelLabel: 'Close',
+        })
+    },
+    update: (origin) => {
+        const handle = modal.open({
+            origin,
+            title: 'A short note',
+            description: 'Wait a beat.',
+            confirmLabel: 'OK',
+            cancelLabel: null,
+        })
+        setTimeout(() => {
+            modal.update(handle.id, {
+                title: 'A longer note',
+                description: 'update() replaced the copy and the shell sprang to the new height.',
+            })
+        }, 400)
+        return handle
+    },
+    dirty: async (origin) => {
+        let blocked = true
+        const handle = modal.open({
+            origin,
+            title: 'Unsaved changes',
+            description: 'The first dismiss is blocked by beforeClose.',
+            confirmLabel: 'Discard',
+            cancelLabel: 'Keep editing',
+            variant: 'warning',
+            beforeClose() {
+                if (!blocked) return true
+                blocked = false
+                modal.update(handle.id, {
+                    description: 'beforeClose returned false. Dismiss again to leave.',
+                })
+                return false
+            },
+        })
+        report(await handle)
+    },
+    handoff: async (origin) => {
+        const inbox = document.querySelector('[data-inbox]')
+        const ok = await modal.open({
+            origin,
+            closeOrigin: inbox,
+            title: 'Send to inbox?',
+            description: 'Confirm and the dialog flies into the chip, not back into this button.',
+            confirmLabel: 'Send',
+            variant: 'danger',
+        })
+        report(ok)
+    },
 }
 
 document.querySelectorAll('[data-open]').forEach((button) => {

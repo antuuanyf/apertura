@@ -92,6 +92,66 @@
         </section>
 
         <section class="section">
+            <h2>Helpers</h2>
+            <p class="muted hint">
+                <code>confirm</code>, <code>alert</code> and <code>prompt</code>
+                are thin wrappers on <code>open()</code>. Per-call
+                <code>morph</code> and <code>size</code> sit on top of the
+                playground knobs.
+            </p>
+            <div class="body row">
+                <button class="btn" type="button" data-open="prompt">Prompt</button>
+                <button class="btn" type="button" data-open="alert">Alert</button>
+                <button class="btn" type="button" data-open="success">Success</button>
+                <button class="btn" type="button" data-open="warning">Warning</button>
+                <button class="btn" type="button" data-open="snappy">Snappy</button>
+                <button class="btn" type="button" data-open="floaty">Floaty</button>
+                <button class="btn square" type="button" data-open="wide">Large</button>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Anchor and in place</h2>
+            <p class="muted hint">
+                Same morph, different slot. Anchor grows beside the button.
+                In place expands a card over itself. A sheet lands at the bottom.
+            </p>
+            <div class="body row">
+                <button class="btn solid" type="button" data-open="menu">Menu</button>
+                <button class="btn" type="button" data-open="sheet">Sheet</button>
+            </div>
+            <div class="card-list" data-card-list>
+                <button class="expand-card" type="button" data-open="card" data-card="North loop">
+                    <span class="expand-card-title">North loop</span>
+                    <span class="muted">12 movements</span>
+                </button>
+                <button class="expand-card" type="button" data-open="card" data-card="Archive">
+                    <span class="expand-card-title">Archive</span>
+                    <span class="muted">Kept for 30 days</span>
+                </button>
+                <button class="expand-card" type="button" data-open="card" data-card="Shared">
+                    <span class="expand-card-title">Shared</span>
+                    <span class="muted">Three people</span>
+                </button>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>After it lands</h2>
+            <p class="muted hint">
+                Drag a dialog toward its button (or down, on a sheet) to dismiss.
+                <code>update()</code> reflows the card with a height spring.
+                Confirm can fly into a different origin.
+            </p>
+            <div class="body row">
+                <button class="btn" type="button" data-open="update">Update copy</button>
+                <button class="btn" type="button" data-open="dirty">Before close</button>
+                <button class="btn tone-error" type="button" data-open="handoff">Send to inbox</button>
+                <span class="inbox" data-inbox>Inbox</span>
+            </div>
+        </section>
+
+        <section class="section">
             <h2>Playground</h2>
             <p class="muted hint">
                 The morph is a simulation, not a baked curve. Lower damping bounces

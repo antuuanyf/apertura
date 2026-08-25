@@ -4,8 +4,10 @@
  *
  * Same trick as super-beautiful-toast. The box you watch grow never distorts;
  * the content, which would, stays hidden and blurred until the skin has almost
- * arrived. x and y are independent springs with an initial kick; width, height
- * and roundness are tweens; colour and shadow go through CSS transitions.
+ * arrived. x and y are independent springs with an initial kick; width and
+ * height are springs without that kick (a size launch explodes the box);
+ * roundness is a short tween so a pill does not oscillate; colour and shadow
+ * go through CSS transitions.
  *
  * Roundness is a ratio of the current min(width, height), not a pixel radius.
  * A pill button reports `border-radius: 999px`. Tweening that number toward
@@ -13,7 +15,7 @@
  * short side still clips to a capsule — then squares off at the end. The ratio
  * (0.5 → 0.16) is what actually changes shape while the box grows.
  *
- * Close settles when the motion rests, not when a 1100ms safety net fires, and
+ * Close settles when the springs rest, not when a 1100ms safety net fires, and
  * the origin is restored instantly while the shell still covers it so the
  * button is labelled and clickable the moment the dialog is gone.
  */
@@ -25,6 +27,8 @@ export const MORPH_DEFAULTS = {
     stiffness: 144,
     damping: 14,
     velocity: 2400,
+    sizeStiffness: 180,
+    sizeDamping: 22,
     sizeDuration: 0.32,
     /** Kept in lockstep with size so the shape changes while the box grows. */
     radiusDuration: 0.32,
@@ -37,6 +41,7 @@ export const MORPH_DEFAULTS = {
     contentBlur: 8,
     maxDuration: 1100,
     closeDamping: 20,
+    closeSizeDamping: 26,
     closeVelocity: 1400,
     closeContentDuration: 0.16,
     closeMaxDuration: 480,
@@ -122,6 +127,20 @@ function paintShell(shellStyle, state) {
     shellStyle.borderRadius = `${state.roundness * minSide(state.width, state.height)}px`
 }
 
+function sizeSpring(config, { close = false } = {}) {
+    return spring({
+        stiffness: config.sizeStiffness,
+        damping: close ? (config.closeSizeDamping ?? config.closeDamping) : config.sizeDamping,
+        velocity: 0,
+        restDelta: 0.4,
+        restSpeed: 4,
+    })
+}
+
+function roundnessEase(close) {
+    return close ? Easing.bezier(0.5, 0.2, 0.2, 1) : Easing.bezier(0.8, 0.3, 0.5, 0.8)
+}
+
 /**
  * @returns {{ settle: () => void }}
  */
@@ -191,8 +210,7 @@ export function morphFromOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle
         bodyEl.style.opacity = '1'
     }
 
-    const keys = ['x', 'y', 'width', 'height', 'roundness', 'contentScale', 'contentBlur']
-    let pending = keys.length
+    const pending = new Set(['x', 'y', 'width', 'height', 'roundness', 'contentScale', 'contentBlur'])
 
     const motion = createMotion(
         {
@@ -210,15 +228,15 @@ export function morphFromOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle
                 if (key === 'contentScale' && bodyEl) bodyEl.style.transform = `scale(${value})`
                 if (key === 'contentBlur' && bodyEl) bodyEl.style.filter = `blur(${value}px)`
             },
-            onSettle() {
-                pending -= 1
-                if (pending <= 0) settle()
+            onSettle(key) {
+                pending.delete(key)
+                if (pending.size === 0) settle()
             },
         },
     )
 
     const travel = { stiffness: config.stiffness, damping: config.damping, velocity: config.velocity }
-    const sizeEase = Easing.bezier(0.8, 0.3, 0.5, 0.8)
+    const size = sizeSpring(config)
     motion.animate(
         {
             x: 0,
@@ -232,9 +250,9 @@ export function morphFromOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle
         {
             x: spring({ ...travel, direction: launchX }),
             y: spring({ ...travel, direction: launchY }),
-            width: easing({ duration: config.sizeDuration, ease: sizeEase }),
-            height: easing({ duration: config.sizeDuration, ease: sizeEase }),
-            roundness: easing({ duration: config.radiusDuration, ease: sizeEase }),
+            width: size,
+            height: size,
+            roundness: easing({ duration: config.radiusDuration, ease: roundnessEase(false) }),
             contentScale: easing({ duration: config.contentDuration, ease: Easing.easeOut }),
             contentBlur: easing({ duration: config.contentDuration, ease: Easing.easeOut }),
         },
@@ -257,7 +275,7 @@ export function morphFromOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle
 
 /**
  * Reverse morph: the dialog collapses back into the origin button.
- * @returns {{ settle: () => void }}
+ * @returns {{ settle: () => void, retarget: (origin: HTMLElement) => void }}
  */
 export function morphToOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle, options = {}, onSettle }) {
     const config = { ...MORPH_DEFAULTS, ...options }
@@ -318,8 +336,7 @@ export function morphToOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle, 
         bodyEl.style.opacity = '0'
     }
 
-    const keys = ['x', 'y', 'width', 'height', 'roundness', 'contentScale', 'contentBlur']
-    let pending = keys.length
+    const pending = new Set(['x', 'y', 'width', 'height', 'roundness', 'contentScale', 'contentBlur'])
 
     const motion = createMotion(
         {
@@ -337,9 +354,9 @@ export function morphToOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle, 
                 if (key === 'contentScale' && bodyEl) bodyEl.style.transform = `scale(${value})`
                 if (key === 'contentBlur' && bodyEl) bodyEl.style.filter = `blur(${value}px)`
             },
-            onSettle() {
-                pending -= 1
-                if (pending <= 0) settle()
+            onSettle(key) {
+                pending.delete(key)
+                if (pending.size === 0) settle()
             },
         },
     )
@@ -351,7 +368,7 @@ export function morphToOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle, 
         restDelta: config.closeRestDelta,
         restSpeed: config.closeRestSpeed,
     }
-    const sizeEase = Easing.bezier(0.5, 0.2, 0.2, 1)
+    const size = sizeSpring(config, { close: true })
     motion.animate(
         {
             x: toX,
@@ -365,9 +382,9 @@ export function morphToOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle, 
         {
             x: spring({ ...travel, direction: launchX }),
             y: spring({ ...travel, direction: launchY }),
-            width: easing({ duration: config.sizeDuration, ease: sizeEase }),
-            height: easing({ duration: config.sizeDuration, ease: sizeEase }),
-            roundness: easing({ duration: config.radiusDuration, ease: sizeEase }),
+            width: size,
+            height: size,
+            roundness: easing({ duration: config.radiusDuration, ease: roundnessEase(true) }),
             contentScale: easing({ duration: config.closeContentDuration, ease: Easing.easeInCubic }),
             contentBlur: easing({ duration: config.closeContentDuration, ease: Easing.easeInCubic }),
         },
@@ -375,6 +392,21 @@ export function morphToOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle, 
 
     let settled = false
     const safety = setTimeout(() => settle(), config.closeMaxDuration)
+
+    function retarget(nextOrigin) {
+        if (settled || !(nextOrigin instanceof HTMLElement) || !nextOrigin.isConnected) return
+        const next = nextOrigin.getBoundingClientRect()
+        motion.animate(
+            {
+                x: next.left - shellRect.left,
+                y: next.top - shellRect.top,
+            },
+            {
+                x: spring({ ...travel, velocity: 0 }),
+                y: spring({ ...travel, velocity: 0 }),
+            },
+        )
+    }
 
     function settle() {
         if (settled) return
@@ -388,5 +420,5 @@ export function morphToOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle, 
         onSettle?.()
     }
 
-    return { settle }
+    return { settle, retarget }
 }
