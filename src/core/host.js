@@ -62,7 +62,7 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
     function ensureMounted() {
         if (layer || typeof document === 'undefined') return
         layer = document.createElement('div')
-        layer.className = 'sbm-layer'
+        layer.className = 'apr-layer'
         layer.setAttribute('aria-live', 'off')
         targetOf().append(layer)
         document.addEventListener('keydown', onKeyDown)
@@ -138,26 +138,26 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
         if (nodes.has(item.id)) return
 
         const itemEl = document.createElement('div')
-        itemEl.className = 'sbm-item'
-        itemEl.dataset.sbmId = String(item.id)
+        itemEl.className = 'apr-item'
+        itemEl.dataset.aprId = String(item.id)
 
         const overlay = document.createElement('div')
-        overlay.className = 'sbm-overlay'
-        overlay.dataset.sbmOverlay = ''
+        overlay.className = 'apr-overlay'
+        overlay.dataset.aprOverlay = ''
 
         const dialog = document.createElement('div')
-        dialog.className = 'sbm-dialog'
+        dialog.className = 'apr-dialog'
         dialog.setAttribute('role', 'dialog')
         dialog.setAttribute('aria-modal', 'true')
         dialog.tabIndex = -1
 
         const shell = document.createElement('div')
-        shell.className = 'sbm-shell'
-        shell.dataset.sbmShell = ''
+        shell.className = 'apr-shell'
+        shell.dataset.aprShell = ''
 
         const body = document.createElement('div')
-        body.className = 'sbm-body'
-        body.dataset.sbmBody = ''
+        body.className = 'apr-body'
+        body.dataset.aprBody = ''
 
         const close = (result) => store.close(item.id, result)
         const cleanupContent = fillBody(body, item, { close, id: item.id })
@@ -165,7 +165,7 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
         if (item.labelledBy) {
             dialog.setAttribute('aria-labelledby', item.labelledBy)
         } else {
-            const title = body.querySelector('.sbm-title')
+            const title = body.querySelector('.apr-title')
             if (title?.id) dialog.setAttribute('aria-labelledby', title.id)
             else if (item.ariaLabel) dialog.setAttribute('aria-label', item.ariaLabel)
             else if (item.title) dialog.setAttribute('aria-label', item.title)

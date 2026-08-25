@@ -1,4 +1,4 @@
-import { modal } from 'super-beautiful-modals'
+import { modal } from 'apertura'
 import './styles.css'
 
 const root = document.documentElement
@@ -113,24 +113,24 @@ const actions = {
             ariaLabel: 'Name the playlist',
             render(body, { close }) {
                 const card = document.createElement('div')
-                card.className = 'sbm-card'
+                card.className = 'apr-card'
                 const title = document.createElement('h2')
-                title.className = 'sbm-title'
+                title.className = 'apr-title'
                 title.textContent = 'Name the playlist'
                 const input = document.createElement('input')
                 input.className = 'demo-input'
                 input.placeholder = 'Evening mix'
                 input.autofocus = true
                 const actionsRow = document.createElement('div')
-                actionsRow.className = 'sbm-actions'
+                actionsRow.className = 'apr-actions'
                 const cancel = document.createElement('button')
                 cancel.type = 'button'
-                cancel.className = 'sbm-btn sbm-btn-ghost'
+                cancel.className = 'apr-btn apr-btn-ghost'
                 cancel.textContent = 'Cancel'
                 cancel.addEventListener('click', () => close())
                 const save = document.createElement('button')
                 save.type = 'button'
-                save.className = 'sbm-btn sbm-btn-solid'
+                save.className = 'apr-btn apr-btn-solid'
                 save.textContent = 'Save'
                 save.addEventListener('click', () => close(input.value.trim() || undefined))
                 input.addEventListener('keydown', (event) => {
@@ -152,23 +152,23 @@ const actions = {
         variant: 'danger',
         render(body, { close }) {
             const card = document.createElement('div')
-            card.className = 'sbm-card'
+            card.className = 'apr-card'
             const title = document.createElement('h2')
-            title.className = 'sbm-title'
+            title.className = 'apr-title'
             title.textContent = 'Account'
             const description = document.createElement('p')
-            description.className = 'sbm-description'
+            description.className = 'apr-description'
             description.textContent = 'Opening another dialog from here scales this one back.'
             const actionsRow = document.createElement('div')
-            actionsRow.className = 'sbm-actions'
+            actionsRow.className = 'apr-actions'
             const dismiss = document.createElement('button')
             dismiss.type = 'button'
-            dismiss.className = 'sbm-btn sbm-btn-ghost'
+            dismiss.className = 'apr-btn apr-btn-ghost'
             dismiss.textContent = 'Close'
             dismiss.addEventListener('click', () => close())
             const next = document.createElement('button')
             next.type = 'button'
-            next.className = 'sbm-btn sbm-btn-solid sbm-btn-danger'
+            next.className = 'apr-btn apr-btn-solid apr-btn-danger'
             next.textContent = 'Delete account…'
             next.addEventListener('click', () => {
                 modal.open({

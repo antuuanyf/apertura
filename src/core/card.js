@@ -5,19 +5,19 @@
 
 export function renderDefaultCard(body, item, { close }) {
     const card = document.createElement('div')
-    card.className = 'sbm-card'
+    card.className = 'apr-card'
 
     if (item.title) {
         const heading = document.createElement('h2')
-        heading.className = 'sbm-title'
-        heading.id = `sbm-title-${item.id}`
+        heading.className = 'apr-title'
+        heading.id = `apr-title-${item.id}`
         heading.textContent = item.title
         card.append(heading)
     }
 
     if (item.description) {
         const description = document.createElement('p')
-        description.className = 'sbm-description'
+        description.className = 'apr-description'
         description.textContent = item.description
         card.append(description)
     }
@@ -27,12 +27,12 @@ export function renderDefaultCard(body, item, { close }) {
 
     if (cancelLabel || confirmLabel) {
         const actions = document.createElement('div')
-        actions.className = 'sbm-actions'
+        actions.className = 'apr-actions'
 
         if (cancelLabel) {
             const button = document.createElement('button')
             button.type = 'button'
-            button.className = 'sbm-btn sbm-btn-ghost'
+            button.className = 'apr-btn apr-btn-ghost'
             button.textContent = cancelLabel
             button.addEventListener('click', () => close(false))
             actions.append(button)
@@ -41,7 +41,7 @@ export function renderDefaultCard(body, item, { close }) {
         if (confirmLabel) {
             const button = document.createElement('button')
             button.type = 'button'
-            button.className = 'sbm-btn sbm-btn-solid' + (item.variant === 'danger' ? ' sbm-btn-danger' : '')
+            button.className = 'apr-btn apr-btn-solid' + (item.variant === 'danger' ? ' apr-btn-danger' : '')
             button.textContent = confirmLabel
             button.addEventListener('click', () => close(true))
             actions.append(button)

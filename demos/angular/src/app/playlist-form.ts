@@ -5,8 +5,8 @@ import { FormsModule } from '@angular/forms'
     selector: 'app-playlist-form',
     imports: [FormsModule],
     template: `
-        <div class="sbm-card">
-            <h2 class="sbm-title">Name the playlist</h2>
+        <div class="apr-card">
+            <h2 class="apr-title">Name the playlist</h2>
             <input
                 class="demo-input"
                 name="playlist"
@@ -15,9 +15,9 @@ import { FormsModule } from '@angular/forms'
                 autofocus
                 (keydown.enter)="save()"
             />
-            <div class="sbm-actions">
-                <button type="button" class="sbm-btn sbm-btn-ghost" (click)="cancel()">Cancel</button>
-                <button type="button" class="sbm-btn sbm-btn-solid" (click)="save()">Save</button>
+            <div class="apr-actions">
+                <button type="button" class="apr-btn apr-btn-ghost" (click)="cancel()">Cancel</button>
+                <button type="button" class="apr-btn apr-btn-solid" (click)="save()">Save</button>
             </div>
         </div>
     `,

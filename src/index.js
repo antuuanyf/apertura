@@ -1,8 +1,8 @@
 /**
- * super-beautiful-modals. Vanilla entry point.
+ * apertura. Vanilla entry point.
  *
- *   import { modal } from 'super-beautiful-modals'
- *   import 'super-beautiful-modals/style.css'
+ *   import { modal } from 'apertura'
+ *   import 'apertura/style.css'
  *
  *   const ok = await modal.open({
  *       origin: event.currentTarget,

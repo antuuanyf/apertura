@@ -1,4 +1,4 @@
-# super-beautiful-modals
+# apertura
 
 Modals where the button you pressed becomes the dialog.
 
@@ -9,13 +9,13 @@ path is a spring simulation, adapted from the motion engine in
 
 Vanilla JS. No dependencies. No host component to mount.
 
-**Demo:** [vanilla](https://antuuanyf.github.io/super-beautiful-modals/) · [Angular](https://antuuanyf.github.io/super-beautiful-modals/angular/)
+**Demo:** [vanilla](https://antuuanyf.github.io/apertura/) · [Angular](https://antuuanyf.github.io/apertura/angular/)
 
 Not on npm yet. Clone the repo and import from `src/`, or run the demos:
 
 ```sh
-git clone https://github.com/antuuanyf/super-beautiful-modals.git
-cd super-beautiful-modals
+git clone https://github.com/antuuanyf/apertura.git
+cd apertura
 npm install
 npm run demo            # vanilla  → http://localhost:5173
 npm run demo:angular    # Angular  → http://localhost:4200
@@ -24,8 +24,8 @@ npm run demo:angular    # Angular  → http://localhost:4200
 ## Quick start
 
 ```js
-import { modal } from 'super-beautiful-modals'
-import 'super-beautiful-modals/style.css'
+import { modal } from 'apertura'
+import 'apertura/style.css'
 
 const ok = await modal.open({
     origin: event.currentTarget,
@@ -106,13 +106,13 @@ in your own CSS wins.
 
 ```css
 :root {
-    --sbm-bg: #202026;
-    --sbm-fg: #f2f2f5;
-    --sbm-radius: 24px;
+    --apr-bg: #202026;
+    --apr-fg: #f2f2f5;
+    --apr-radius: 24px;
 }
 ```
 
-Class names are stable, unscoped, prefixed `sbm-`.
+Class names are stable, unscoped, prefixed `apr-`.
 
 ## Accessibility
 
@@ -128,7 +128,7 @@ disappear in place.
 ## Isolated instances
 
 ```js
-import { createModal } from 'super-beautiful-modals'
+import { createModal } from 'apertura'
 
 const settings = createModal({ mountTo: '#app' })
 settings.open({ title: 'Inside the app root' })

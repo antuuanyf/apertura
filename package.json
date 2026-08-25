@@ -1,15 +1,15 @@
 {
-  "name": "super-beautiful-modals",
+  "name": "apertura",
   "version": "0.1.0",
   "description": "Modals for the web where the button that opens them becomes the dialog. Physical springs, reverse morph on close. No dependencies. Vanilla JS.",
   "type": "module",
   "types": "./index.d.ts",
-  "main": "./dist/super-beautiful-modals.js",
-  "module": "./dist/super-beautiful-modals.js",
+  "main": "./dist/apertura.js",
+  "module": "./dist/apertura.js",
   "exports": {
     ".": {
       "types": "./index.d.ts",
-      "import": "./dist/super-beautiful-modals.js"
+      "import": "./dist/apertura.js"
     },
     "./style.css": "./dist/style.css",
     "./package.json": "./package.json"
@@ -47,12 +47,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/antuuanyf/super-beautiful-modals.git"
+    "url": "git+https://github.com/antuuanyf/apertura.git"
   },
   "bugs": {
-    "url": "https://github.com/antuuanyf/super-beautiful-modals/issues"
+    "url": "https://github.com/antuuanyf/apertura/issues"
   },
-  "homepage": "https://github.com/antuuanyf/super-beautiful-modals#readme",
+  "homepage": "https://github.com/antuuanyf/apertura#readme",
   "devDependencies": {
     "vite": "^7.3.1"
   }
