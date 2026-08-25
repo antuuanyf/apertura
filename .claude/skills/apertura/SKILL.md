@@ -1,9 +1,9 @@
 ---
-name: super-beautiful-modals
+name: apertura
 description: Modal dialogs where the button becomes the dialog. Use when showing a modal, dialog or confirm in vanilla JS; when the morph, the reverse close, the overlay or theming misbehave; or when changing the package itself (src/core, styles.css, the demos).
 ---
 
-# super-beautiful-modals
+# apertura
 
 Vanilla JS dialogs with a shared-element morph out of the triggering button,
 and the reverse morph back into it on close. Same motion engine as
@@ -15,8 +15,8 @@ Read the second one before changing anything under `src/core/`.
 ## Showing a dialog
 
 ```js
-import { modal } from 'super-beautiful-modals'
-import 'super-beautiful-modals/style.css'
+import { modal } from 'apertura'
+import 'apertura/style.css'
 
 const ok = await modal.open({
     origin: event.currentTarget,
@@ -34,8 +34,8 @@ Three things bite when integrating:
 - **The origin must still exist on close** for the reverse morph. If the button
   unmounts, you silently get a fade. Keep it in the DOM, even if `opacity: 0`.
 - **Colours come from tokens, never from a class you add to the shell.**
-  Retheme with `--sbm-*`. Restyling `.sbm-shell` directly fights the morph.
-- **Do not put a CSS transform on `.sbm-dialog`.** Flex on `.sbm-item` centres
+  Retheme with `--apr-*`. Restyling `.apr-shell` directly fights the morph.
+- **Do not put a CSS transform on `.apr-dialog`.** Flex on `.apr-item` centres
   it. `motionOf` owns that transform.
 
 ## Changing the package
@@ -54,7 +54,7 @@ Invariants:
   the toast package. Do not import from `super-beautiful-toast`.
 - **Every visual value is a token with a literal fallback** on `:where(:root)`.
 - **The store replaces state, never mutates it.**
-- **Class names are public API.** Prefixed `sbm-`. Renaming one is breaking.
+- **Class names are public API.** Prefixed `apr-`. Renaming one is breaking.
 - **Read `element.js` before animating anything by hand.**
 
 ## Verifying a change

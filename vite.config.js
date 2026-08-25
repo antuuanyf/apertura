@@ -5,7 +5,7 @@ export default defineConfig({
         lib: {
             entry: 'src/index.js',
             formats: ['es'],
-            fileName: () => 'super-beautiful-modals.js',
+            fileName: () => 'apertura.js',
             cssFileName: 'style',
         },
         cssCodeSplit: false,

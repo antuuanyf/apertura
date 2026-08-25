@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+Renamed the package from `super-beautiful-modals` to `apertura`. Public
+classes are prefixed `apr-`; tokens are `--apr-*`.
+
 ## 0.1.0
 
 First release. Dialogs that fly out of a button and back into it, using the
@@ -14,4 +19,4 @@ Vanilla JS. No framework adapter, no runtime dependencies.
 - Default card (title, description, confirm/cancel) plus `content` / `render`.
 - `inert` on the rest of the page, scroll lock, focus restore, Escape.
 - Nested dialogs: the one underneath scales back and goes inert.
-- Tokens on `:where(:root)`, classes prefixed `sbm-`.
+- Tokens on `:where(:root)`, classes prefixed `apr-`.

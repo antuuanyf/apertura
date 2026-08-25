@@ -25,7 +25,7 @@ name to the clone:
 "compilerOptions": {
     "allowJs": true,
     "paths": {
-        "super-beautiful-modals": ["path/to/super-beautiful-modals/src/index"]
+        "apertura": ["path/to/apertura/src/index"]
     }
 }
 ```
@@ -37,7 +37,7 @@ In `angular.json` / `project.json`:
 
 ```json
 "styles": [
-    "path/to/super-beautiful-modals/src/core/styles.css",
+    "path/to/apertura/src/core/styles.css",
     "src/styles.css"
 ]
 ```
@@ -46,17 +46,17 @@ Or in the global sheet:
 
 ```css
 /* src/styles.css */
-@import 'path/to/super-beautiful-modals/src/core/styles.css';
+@import 'path/to/apertura/src/core/styles.css';
 ```
 
 From `demos/angular` those paths are `../../src/index` and
-`../../src/core/styles.css`. Retheme with `--sbm-*` in the same global sheet.
-Do not add a class to `.sbm-shell`.
+`../../src/core/styles.css`. Retheme with `--apr-*` in the same global sheet.
+Do not add a class to `.apr-shell`.
 
 ## 1. A component inside the dialog
 
 The dialog body is a regular standalone component. It receives `close` as an
-input and calls it with the result. Use the public `sbm-*` classes so it
+input and calls it with the result. Use the public `apr-*` classes so it
 matches the default card.
 
 ```ts
@@ -67,8 +67,8 @@ import { FormsModule } from '@angular/forms'
     selector: 'app-playlist-form',
     imports: [FormsModule],
     template: `
-        <div class="sbm-card">
-            <h2 class="sbm-title">Name the playlist</h2>
+        <div class="apr-card">
+            <h2 class="apr-title">Name the playlist</h2>
             <input
                 class="demo-input"
                 name="playlist"
@@ -76,9 +76,9 @@ import { FormsModule } from '@angular/forms'
                 placeholder="Evening mix"
                 (keydown.enter)="save()"
             />
-            <div class="sbm-actions">
-                <button type="button" class="sbm-btn sbm-btn-ghost" (click)="cancel()">Cancel</button>
-                <button type="button" class="sbm-btn sbm-btn-solid" (click)="save()">Save</button>
+            <div class="apr-actions">
+                <button type="button" class="apr-btn apr-btn-ghost" (click)="cancel()">Cancel</button>
+                <button type="button" class="apr-btn apr-btn-solid" (click)="save()">Save</button>
             </div>
         </div>
     `,
@@ -112,7 +112,7 @@ import {
     createComponent,
     inject,
 } from '@angular/core'
-import { modal } from 'super-beautiful-modals'
+import { modal } from 'apertura'
 import { PlaylistForm } from './playlist-form'
 
 @Component({ /* ... */ })
@@ -162,7 +162,7 @@ import {
     createComponent,
     inject,
 } from '@angular/core'
-import { modal, type ModalOpenOptions } from 'super-beautiful-modals'
+import { modal, type ModalOpenOptions } from 'apertura'
 
 @Injectable({ providedIn: 'root' })
 export class Modal {
@@ -274,7 +274,7 @@ onDelete(event: Event) {
 ## Isolated instances
 
 ```ts
-import { createModal } from 'super-beautiful-modals'
+import { createModal } from 'apertura'
 
 const settings = createModal({ mountTo: '#app' })
 settings.open({ title: 'Inside the app root' })
@@ -288,12 +288,12 @@ The shared `modal` is one host. A second `createModal()` is a second layer.
 destroying the row that held the button silently falls back to a fade. Keep
 the element in the DOM, even at `opacity: 0`.
 
-**Colours come from tokens.** `--sbm-*` in global CSS. A class on `.sbm-shell`
+**Colours come from tokens.** `--apr-*` in global CSS. A class on `.apr-shell`
 fights the morph.
 
 **SSR has no `document`.** Call `open()` from a click, `afterNextRender`, or
 behind `isPlatformBrowser`. The host already no-ops `ensureMounted()` when
 `document` is missing, but there is nothing to morph from on the server.
 
-**Do not put a CSS transform on `.sbm-dialog`.** Flex on `.sbm-item` centres
+**Do not put a CSS transform on `.apr-dialog`.** Flex on `.apr-item` centres
 it. `motionOf` owns that transform.

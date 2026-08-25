@@ -1,19 +1,19 @@
 import { Component, input } from '@angular/core'
-import { modal } from 'super-beautiful-modals'
+import { modal } from 'apertura'
 
 @Component({
     selector: 'app-account-panel',
     template: `
-        <div class="sbm-card">
-            <h2 class="sbm-title">Account</h2>
-            <p class="sbm-description">
+        <div class="apr-card">
+            <h2 class="apr-title">Account</h2>
+            <p class="apr-description">
                 Opening another dialog from here scales this one back.
             </p>
-            <div class="sbm-actions">
-                <button type="button" class="sbm-btn sbm-btn-ghost" (click)="dismiss()">Close</button>
+            <div class="apr-actions">
+                <button type="button" class="apr-btn apr-btn-ghost" (click)="dismiss()">Close</button>
                 <button
                     type="button"
-                    class="sbm-btn sbm-btn-solid sbm-btn-danger"
+                    class="apr-btn apr-btn-solid apr-btn-danger"
                     (click)="onDelete($event)"
                 >
                     Delete account…

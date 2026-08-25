@@ -15,7 +15,7 @@
     "module": "preserve",
     "allowJs": true,
     "paths": {
-      "super-beautiful-modals": ["../../src/index"]
+      "apertura": ["../../src/index"]
     }
   },
   "angularCompilerOptions": {

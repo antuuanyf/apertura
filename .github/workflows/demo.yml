@@ -1,7 +1,7 @@
 # Builds both demos and publishes them to GitHub Pages on every push to main.
 #
-# Vanilla → https://antuuanyf.github.io/super-beautiful-modals/
-# Angular → https://antuuanyf.github.io/super-beautiful-modals/angular/
+# Vanilla → https://antuuanyf.github.io/apertura/
+# Angular → https://antuuanyf.github.io/apertura/angular/
 #
 # Both demos resolve the library to ../../src, so what gets deployed is always
 # the current source rather than a stale dist.

@@ -18,7 +18,7 @@ src/core/
   card.js          default chrome (title, copy, actions).
   host.js          DOM, overlay, enter, leave, nested stack.
   env.js           isBrowser, prefersReducedMotion.
-  styles.css       prefixed sbm-, tokens on :where(:root).
+  styles.css       prefixed apr-, tokens on :where(:root).
   motion/          copied from super-beautiful-toast.
                    engine, easing, element. Do not import from the toast package.
 src/index.js       createModal() / modal. Auto-mounts on first open().
@@ -26,18 +26,18 @@ src/index.js       createModal() / modal. Auto-mounts on first open().
 
 `motion/` is a copy, not a workspace dependency. Two rAF loops on a page that
 also uses the toast package are fine. Two `motionOf` WeakMaps on the *same
-node* are not, and should not happen: toasts own `.sbt-*`, this owns `.sbm-*`.
+node* are not, and should not happen: toasts own `.sbt-*`, this owns `.apr-*`.
 
 ## Anatomy of one dialog
 
 ```
-.sbm-layer                 fixed, inset 0, pointer-events none
-  .sbm-item                absolute, inset 0, flex-centered   × N
-    .sbm-overlay           the scrim. This is what can blur: it has no
+.apr-layer                 fixed, inset 0, pointer-events none
+  .apr-item                absolute, inset 0, flex-centered   × N
+    .apr-overlay           the scrim. This is what can blur: it has no
                            transformed ancestor. The toast package could not.
-    .sbm-dialog            the slot. Its transform belongs to enter/leave/under.
-      .sbm-shell           the skin. This is what morphs.
-        .sbm-body          padding, and the content
+    .apr-dialog            the slot. Its transform belongs to enter/leave/under.
+      .apr-shell           the skin. This is what morphs.
+        .apr-body          padding, and the content
 ```
 
 The item is flex-centered so the slot has **no CSS transform**. `motionOf`
@@ -88,7 +88,7 @@ dialog is in the tab order. Closing the top one puts the one below back.
    `transition: none` at frame zero, then colour and shadow only.
 5. **Never read the current transform back from the DOM.** `element.js` keeps
    every channel in memory.
-6. **Do not put a CSS transform on `.sbm-dialog` for centring.** Flex on the
+6. **Do not put a CSS transform on `.apr-dialog` for centring.** Flex on the
    item. See anatomy.
 7. **Acquire the page lock after the layer is in the tree,** or the lock will
    try to inert a layer that is not there yet, and miss a sibling that is.

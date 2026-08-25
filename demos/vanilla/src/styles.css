@@ -12,15 +12,15 @@
     --radius: 14px;
     color-scheme: light;
 
-    --sbm-bg: #ffffff;
-    --sbm-fg: #1b1b1f;
-    --sbm-muted: #5c5c66;
-    --sbm-shadow: 0 8px 40px rgba(0, 0, 0, 0.18), 0 0 1px rgba(0, 0, 0, 0.22);
-    --sbm-overlay: color-mix(in srgb, #0c0c10 42%, transparent);
-    --sbm-btn-bg: #1b1b1f;
-    --sbm-btn-fg: #ffffff;
-    --sbm-danger-bg: #b3261e;
-    --sbm-danger-fg: #ffffff;
+    --apr-bg: #ffffff;
+    --apr-fg: #1b1b1f;
+    --apr-muted: #5c5c66;
+    --apr-shadow: 0 8px 40px rgba(0, 0, 0, 0.18), 0 0 1px rgba(0, 0, 0, 0.22);
+    --apr-overlay: color-mix(in srgb, #0c0c10 42%, transparent);
+    --apr-btn-bg: #1b1b1f;
+    --apr-btn-fg: #ffffff;
+    --apr-danger-bg: #b3261e;
+    --apr-danger-fg: #ffffff;
 }
 
 :root[data-theme='dark'] {
@@ -36,15 +36,15 @@
     --tone-on: #10100f;
     color-scheme: dark;
 
-    --sbm-bg: #202026;
-    --sbm-fg: #f2f2f5;
-    --sbm-muted: #b4b4bc;
-    --sbm-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.14);
-    --sbm-overlay: color-mix(in srgb, #000000 62%, transparent);
-    --sbm-btn-bg: #ececef;
-    --sbm-btn-fg: #0e0e10;
-    --sbm-danger-bg: #ef6a5e;
-    --sbm-danger-fg: #1a0605;
+    --apr-bg: #202026;
+    --apr-fg: #f2f2f5;
+    --apr-muted: #b4b4bc;
+    --apr-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.14);
+    --apr-overlay: color-mix(in srgb, #000000 62%, transparent);
+    --apr-btn-bg: #ececef;
+    --apr-btn-fg: #0e0e10;
+    --apr-danger-bg: #ef6a5e;
+    --apr-danger-fg: #1a0605;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -61,15 +61,15 @@
         --tone-on: #10100f;
         color-scheme: dark;
 
-        --sbm-bg: #202026;
-        --sbm-fg: #f2f2f5;
-        --sbm-muted: #b4b4bc;
-        --sbm-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.14);
-        --sbm-overlay: color-mix(in srgb, #000000 62%, transparent);
-        --sbm-btn-bg: #ececef;
-        --sbm-btn-fg: #0e0e10;
-        --sbm-danger-bg: #ef6a5e;
-        --sbm-danger-fg: #1a0605;
+        --apr-bg: #202026;
+        --apr-fg: #f2f2f5;
+        --apr-muted: #b4b4bc;
+        --apr-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.14);
+        --apr-overlay: color-mix(in srgb, #000000 62%, transparent);
+        --apr-btn-bg: #ececef;
+        --apr-btn-fg: #0e0e10;
+        --apr-danger-bg: #ef6a5e;
+        --apr-danger-fg: #1a0605;
     }
 }
 

@@ -1,6 +1,6 @@
 # Angular demo
 
-Runnable example of [super-beautiful-modals](../..) from Angular. There is no
+Runnable example of [apertura](../..) from Angular. There is no
 host adapter. The normal path is `Modal.openComponent()`: a standalone
 component mounted into the dialog body. See [`docs/angular.md`](../../docs/angular.md).
 

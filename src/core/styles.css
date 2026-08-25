@@ -1,63 +1,63 @@
 /**
- * super-beautiful-modals. Styles.
+ * apertura. Styles.
  *
  * Every value a design might want to change is a custom property, declared on
  * `:where(:root)` so it carries ZERO specificity. Same contract as the toast
  * package: drop this file into a blank page and the dialogs look finished.
  *
- * Class names are all prefixed `sbm-` and none of them are generated.
+ * Class names are all prefixed `apr-` and none of them are generated.
  */
 
 :where(:root) {
-    --sbm-bg: #ffffff;
-    --sbm-fg: #1b1b1f;
-    --sbm-muted: #5c5c66;
-    --sbm-radius: 32px;
-    --sbm-shadow: 0 8px 40px rgba(0, 0, 0, 0.18), 0 0 1px rgba(0, 0, 0, 0.22);
-    --sbm-padding: 28px 28px 24px;
-    --sbm-max-width: min(440px, calc(100vw - 32px));
-    --sbm-gap: 16px;
+    --apr-bg: #ffffff;
+    --apr-fg: #1b1b1f;
+    --apr-muted: #5c5c66;
+    --apr-radius: 32px;
+    --apr-shadow: 0 8px 40px rgba(0, 0, 0, 0.18), 0 0 1px rgba(0, 0, 0, 0.22);
+    --apr-padding: 28px 28px 24px;
+    --apr-max-width: min(440px, calc(100vw - 32px));
+    --apr-gap: 16px;
 
-    --sbm-font-family: inherit;
-    --sbm-font-size: 0.9375rem;
-    --sbm-line-height: 1.45;
-    --sbm-font-weight: 400;
-    --sbm-title-size: 1.25rem;
-    --sbm-title-weight: 600;
+    --apr-font-family: inherit;
+    --apr-font-size: 0.9375rem;
+    --apr-line-height: 1.45;
+    --apr-font-weight: 400;
+    --apr-title-size: 1.25rem;
+    --apr-title-weight: 600;
 
-    --sbm-z-index: 2300;
-    --sbm-overlay: color-mix(in srgb, #0c0c10 42%, transparent);
-    --sbm-overlay-blur: 10px;
+    --apr-z-index: 2300;
+    --apr-overlay: color-mix(in srgb, #0c0c10 42%, transparent);
+    --apr-overlay-blur: 10px;
 
-    --sbm-btn-radius: 999px;
-    --sbm-btn-bg: #1b1b1f;
-    --sbm-btn-fg: #ffffff;
-    --sbm-danger-bg: #b3261e;
-    --sbm-danger-fg: #ffffff;
+    --apr-btn-radius: 999px;
+    --apr-btn-bg: #1b1b1f;
+    --apr-btn-fg: #ffffff;
+    --apr-danger-bg: #b3261e;
+    --apr-danger-fg: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
     :where(:root) {
-        --sbm-bg: #1c1b1f;
-        --sbm-fg: #e6e1e5;
-        --sbm-muted: #adaaae;
-        --sbm-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.16);
-        --sbm-overlay: color-mix(in srgb, #000000 56%, transparent);
-        --sbm-btn-bg: #ececef;
-        --sbm-btn-fg: #0e0e10;
-        --sbm-danger-bg: #ef6a5e;
-        --sbm-danger-fg: #1a0605;
+        --apr-bg: #1c1b1f;
+        --apr-fg: #e6e1e5;
+        --apr-muted: #adaaae;
+        --apr-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.16);
+        --apr-overlay: color-mix(in srgb, #000000 56%, transparent);
+        --apr-btn-bg: #ececef;
+        --apr-btn-fg: #0e0e10;
+        --apr-danger-bg: #ef6a5e;
+        --apr-danger-fg: #1a0605;
     }
 }
 
-.sbm-layer {
+.apr-layer {
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: var(--sbm-z-index);
+    z-index: var(--apr-z-index);
 }
 
-.sbm-item {
+.apr-item {
     position: absolute;
     inset: 0;
     display: flex;
@@ -66,68 +66,68 @@
     pointer-events: none;
 }
 
-.sbm-overlay {
+.apr-overlay {
     position: absolute;
     inset: 0;
     pointer-events: auto;
     opacity: 0;
-    background: var(--sbm-overlay);
-    backdrop-filter: blur(var(--sbm-overlay-blur));
-    -webkit-backdrop-filter: blur(var(--sbm-overlay-blur));
+    background: var(--apr-overlay);
+    backdrop-filter: blur(var(--apr-overlay-blur));
+    -webkit-backdrop-filter: blur(var(--apr-overlay-blur));
 }
 
-.sbm-dialog {
+.apr-dialog {
     position: relative;
     z-index: 1;
     pointer-events: auto;
-    max-width: var(--sbm-max-width);
+    max-width: var(--apr-max-width);
     outline: none;
 }
 
-.sbm-shell {
+.apr-shell {
     position: relative;
     display: flex;
     box-sizing: border-box;
-    background: var(--sbm-bg);
-    color: var(--sbm-fg);
-    border-radius: var(--sbm-radius);
-    box-shadow: var(--sbm-shadow);
+    background: var(--apr-bg);
+    color: var(--apr-fg);
+    border-radius: var(--apr-radius);
+    box-shadow: var(--apr-shadow);
     overflow: hidden;
-    font-family: var(--sbm-font-family);
-    font-size: var(--sbm-font-size);
-    font-weight: var(--sbm-font-weight);
-    line-height: var(--sbm-line-height);
+    font-family: var(--apr-font-family);
+    font-size: var(--apr-font-size);
+    font-weight: var(--apr-font-weight);
+    line-height: var(--apr-line-height);
 }
 
-.sbm-body {
+.apr-body {
     display: flex;
     flex-direction: column;
     width: 100%;
-    padding: var(--sbm-padding);
+    padding: var(--apr-padding);
     box-sizing: border-box;
 }
 
-.sbm-card {
+.apr-card {
     display: flex;
     flex-direction: column;
-    gap: var(--sbm-gap);
+    gap: var(--apr-gap);
     min-width: min(280px, 100%);
 }
 
-.sbm-title {
+.apr-title {
     margin: 0;
-    font-size: var(--sbm-title-size);
-    font-weight: var(--sbm-title-weight);
+    font-size: var(--apr-title-size);
+    font-weight: var(--apr-title-weight);
     letter-spacing: -0.03em;
     line-height: 1.2;
 }
 
-.sbm-description {
+.apr-description {
     margin: 0;
-    color: var(--sbm-muted);
+    color: var(--apr-muted);
 }
 
-.sbm-actions {
+.apr-actions {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
@@ -135,13 +135,13 @@
     margin-top: 8px;
 }
 
-.sbm-btn {
+.apr-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     padding: 10px 18px;
     border: 1px solid transparent;
-    border-radius: var(--sbm-btn-radius);
+    border-radius: var(--apr-btn-radius);
     background: transparent;
     color: inherit;
     font: inherit;
@@ -150,32 +150,32 @@
     cursor: pointer;
 }
 
-.sbm-btn:focus-visible {
+.apr-btn:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 2px;
 }
 
-.sbm-btn-ghost {
+.apr-btn-ghost {
     border-color: color-mix(in srgb, currentColor 18%, transparent);
 }
 
-.sbm-btn-ghost:hover,
-.sbm-btn-ghost:focus-visible {
+.apr-btn-ghost:hover,
+.apr-btn-ghost:focus-visible {
     background: color-mix(in srgb, currentColor 8%, transparent);
 }
 
-.sbm-btn-solid {
-    background: var(--sbm-btn-bg);
-    color: var(--sbm-btn-fg);
+.apr-btn-solid {
+    background: var(--apr-btn-bg);
+    color: var(--apr-btn-fg);
 }
 
-.sbm-btn-danger {
-    background: var(--sbm-danger-bg);
-    color: var(--sbm-danger-fg);
+.apr-btn-danger {
+    background: var(--apr-danger-bg);
+    color: var(--apr-danger-fg);
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .sbm-overlay {
+    .apr-overlay {
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
     }

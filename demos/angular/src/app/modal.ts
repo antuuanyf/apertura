@@ -6,7 +6,7 @@ import {
     createComponent,
     inject,
 } from '@angular/core'
-import { modal, type ModalOpenOptions } from 'super-beautiful-modals'
+import { modal, type ModalOpenOptions } from 'apertura'
 
 @Injectable({ providedIn: 'root' })
 export class Modal {
