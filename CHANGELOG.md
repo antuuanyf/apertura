@@ -5,6 +5,10 @@
 Renamed the package from `super-beautiful-modals` to `apertura`. Public
 classes are prefixed `apr-`; tokens are `--apr-*`.
 
+- `gesture: false` turns off drag-to-dismiss without blocking Escape or overlay.
+- `update()` springs title, description and actions to the new card height.
+- Morph interpolates all four border-radius corners, so sheets do not snap.
+
 ## 0.1.0
 
 First release. Dialogs that fly out of a button and back into it, using the

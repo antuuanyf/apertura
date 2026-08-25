@@ -15,13 +15,16 @@ src/core/
   store.js         what dialogs exist. Immutable state, observable.
   morph.js         button → dialog and dialog → button.
   lock.js          inert, scroll lock, restore focus.
-  card.js          default chrome (title, copy, actions).
+  card.js          default chrome (title, copy, actions, prompt).
   host.js          DOM, overlay, enter, leave, nested stack.
+  placement.js     slot layout for center / anchor / inplace / bottom.
+  gesture.js       drag-to-dismiss. Opt out per open with `gesture: false`.
+  presets.js       snappy / floaty / cinematic, size, variant classes.
   env.js           isBrowser, prefersReducedMotion.
   styles.css       prefixed apr-, tokens on :where(:root).
   motion/          copied from super-beautiful-toast.
                    engine, easing, element. Do not import from the toast package.
-src/index.js       createModal() / modal. Auto-mounts on first open().
+src/index.js       createModal() / the shared `modal` instance.
 ```
 
 `motion/` is a copy, not a workspace dependency. Two rAF loops on a page that
@@ -58,10 +61,18 @@ If the origin has been unmounted, disconnected, or has a zero rect (display
 none, off-screen collapsed), close falls back to a fade. Same if the user
 asked for reduced motion.
 
-Close is slightly more damped (`closeDamping: 20`, `closeVelocity: 1400`) so
-the shell settles into the button instead of overshooting it. Size still lands
-fast; position still springs. Content hides in ~160ms so a form is not seen
-squashing.
+Close is slightly more damped (`closeDamping: 20`, `closeSizeDamping: 26`) so
+the shell settles into the button instead of overshooting it. Position still
+gets the launch kick; size springs do not (a kick on width explodes the box).
+Roundness stays a short tween so a pill does not oscillate. Content unblurs
+and fades in during the flight (~150ms delay, then 320ms). On close, content
+hides in ~160ms so a form is not seen squashing.
+
+`placement` is layout, not a second morph. The slot is positioned with
+`top`/`left` on `.apr-dialog` (or flex-centered for `center`) *before*
+`freezeSlot` measures. Anchor, inplace and bottom track the origin while
+open, and retarget x/y during the reverse morph if it moves. Never put a
+CSS transform on `.apr-dialog` to place it.
 
 ## Overlay
 
@@ -110,6 +121,27 @@ dialog is in the tab order. Closing the top one puts the one below back.
     unlabelled and unclickable after the dialog had already visually gone.
     Close settles when the springs rest (with pixel-scale restDelta), restores
     `opacity`/`pointer-events` with no transition, then unmounts.
+
+11. **Unfreeze the shell before measuring an `update()` target.** `refresh()`
+    pins width/height so the new copy does not flash at full size. Measuring
+    `to` while those pins are still on always returns `from`, the spring
+    no-ops, and `overflow: hidden` clips the extra lines. Drop the pins for
+    the measure, put them back, then spring.
+
+12. **Pin the body, then hop the copy.** `refresh()` snapshots title /
+    description / actions before swapping. After the new tree is in, those
+    nodes start at their old height (overflow hidden) so the flex column still
+    looks like the previous card. The same size spring drives the shell and
+    those heights, so the button rides down instead of appearing already at
+    the destination. A leftover invert (`translate`) covers structure changes
+    that height alone cannot. Do not clear inline shell size on leave: the
+    reverse morph needs the current visual box.
+
+13. **`border-radius` shorthand is the first corner.** A sheet paints 32px on
+    top and 18px on the bottom. The morph used to tween one ratio from
+    `parseFloat(computed.borderRadius)`, which is the top, then `clearFrozen`
+    let CSS snap the bottom pair. Read the four longhands and lerp them as
+    ratios of the current min side, same pill-safe model as gotcha 9.
 
 ## Lifecycle
 

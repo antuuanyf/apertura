@@ -39,11 +39,27 @@ if (ok) await deleteMovement()
 ```
 
 The layer is created on the first `open()` and teleports onto `document.body`.
-`confirm` resolves `true`, `cancel` resolves `false`, Escape or overlay click
-resolves `undefined`.
+`confirm` resolves `true`, `cancel` resolves `false`, Escape, overlay click or
+a drag-to-dismiss resolves `undefined`.
 
 Without an `origin` the dialog fades and scales in from the centre, which is
 the right thing when nothing on screen caused it.
+
+```js
+const ok = await modal.confirm({
+    origin: event.currentTarget,
+    title: 'Delete this movement?',
+    variant: 'danger',
+})
+
+const name = await modal.prompt({
+    origin: event.currentTarget,
+    title: 'Name the playlist',
+    placeholder: 'Evening mix',
+})
+
+await modal.alert({ origin: event.currentTarget, title: 'Invite sent' })
+```
 
 ## Custom content
 
@@ -69,20 +85,29 @@ modal.open({
 | Option | Type | Default | |
 |---|---|---|---|
 | `origin` | HTMLElement | `null` | The element that becomes the dialog. |
+| `closeOrigin` | HTMLElement | `origin` | Fly into this element on close. |
 | `originStyle` | object | read from `origin` | `{ background, boxShadow, borderRadius }` override. |
 | `title` | string | `''` | Default card heading. |
 | `description` | string | `''` | Default card body. |
 | `confirmLabel` | string \| null | `'OK'` | `null` hides the button. |
 | `cancelLabel` | string \| null | `'Cancel'` | `null` hides the button. |
-| `variant` | string | `'neutral'` | `danger` paints the confirm button. |
-| `dismissible` | boolean | `true` | Escape and overlay click. |
+| `variant` | string | `'neutral'` | `danger`, `success` and `warning` paint the confirm button. |
+| `dismissible` | boolean | `true` | Escape, overlay click, and drag-to-dismiss. |
+| `gesture` | boolean | `true` | Drag-to-dismiss. Ignored when `dismissible` is false. |
+| `placement` | string | `'center'` | `anchor` grows beside the origin, `inplace` expands on it, `bottom` is a sheet. |
+| `size` | string \| number | token | `'sm'` `'md'` `'lg'`, a pixel number, or any CSS max-width. |
+| `morph` | string \| object | configured | `'snappy'` `'floaty'` `'cinematic'`, or a patch of spring knobs. |
+| `beforeClose` | function | `null` | Return `false` to keep the dialog open. May be async. |
 | `content` | Element \| string | `null` | Replaces the default card. |
 | `render` | function | `null` | Replaces the default card. |
 | `ariaLabel` | string | from `title` | |
+| `placeholder` | string | `''` | Used by `modal.prompt()`. |
+| `defaultValue` | string | `''` | Used by `modal.prompt()`. |
 
 ```js
-const id = modal.open({ title: 'Hello' }).id
-modal.close(id, 'done')
+const handle = modal.open({ title: 'Hello' })
+modal.update(handle.id, { description: 'A second line.' })
+modal.close(handle.id, 'done')
 modal.close()          // topmost
 modal.closeAll()
 ```
@@ -97,7 +122,16 @@ modal.configure({
 
 Same knobs as the toast morph. Lower `damping` bounces more. `velocity` is the
 kick that bends the path. Set it to `0` and the dialog travels in a straight
-line.
+line. Width and height use a separate spring (`sizeStiffness` / `sizeDamping`)
+with no kick, so the box does not explode on open.
+
+Per `open()` you can pass a named feel, or a patch that sits on top of the
+configured morph:
+
+```js
+modal.open({ origin, title: 'Quick', morph: 'snappy' })
+modal.open({ origin, title: 'Soft', morph: { damping: 10 } })
+```
 
 ## Theming
 
@@ -120,7 +154,7 @@ A modal *is* a modal: it blocks the page, traps tab inside the dialog (via
 `inert` on everything else), restores focus when it closes, and freezes scroll.
 `role="dialog"` and `aria-modal="true"` are set for you. A dialog with
 `dismissible: false` cannot be dismissed with Escape or a click outside, so
-give it a button.
+give it a button. `gesture: false` turns off drag-to-dismiss only.
 
 Under `prefers-reduced-motion: reduce` there is no morph. Dialogs appear and
 disappear in place.
@@ -138,8 +172,6 @@ settings.open({ title: 'Inside the app root' })
 
 - No Vue or React adapter. The store is immutable so either one stays cheap.
   Angular mounts a component into `render`; see [docs/angular.md](docs/angular.md).
-- No sheets, drawers or popovers.
-- No `modal.prompt()` helper. `open()` already returns a promise.
 
 ## License
 

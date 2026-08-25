@@ -64,6 +64,7 @@ onOpen(origin: HTMLElement) &#123;
             <button class="btn tone-error" type="button" (click)="confirmDanger($event)">Delete</button>
             <button class="btn" type="button" (click)="confirmNeutral($event)">Neutral</button>
             <button class="btn" type="button" (click)="sticky($event)">Not dismissible</button>
+            <button class="btn" type="button" (click)="noGesture($event)">No drag</button>
         </div>
         <p class="muted result">{{ lastResult() }}</p>
     </section>

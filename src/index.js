@@ -24,6 +24,7 @@ export {
     createModalHost,
     HOST_DEFAULTS,
     MORPH_DEFAULTS,
+    MORPH_PRESETS,
     createMotion,
     spring,
     easing,
@@ -59,10 +60,41 @@ export function createModal(options = {}) {
         else store.close(id, result)
     }
 
+    function confirm(opts = {}) {
+        return open({
+            confirmLabel: 'OK',
+            cancelLabel: 'Cancel',
+            ...opts,
+        })
+    }
+
+    function alert(opts = {}) {
+        return open({
+            confirmLabel: 'OK',
+            ...opts,
+            cancelLabel: null,
+        })
+    }
+
+    function prompt(opts = {}) {
+        return open({
+            confirmLabel: 'OK',
+            cancelLabel: 'Cancel',
+            ...opts,
+            kind: 'prompt',
+            render: undefined,
+            content: null,
+        })
+    }
+
     return {
         open,
+        confirm,
+        alert,
+        prompt,
         close,
         closeAll: () => store.closeAll(),
+        update: (id, patch) => store.update(id, patch),
         configure: (patch) => host.configure(patch),
         destroy: () => {
             for (const resolve of pending.values()) resolve(undefined)

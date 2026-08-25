@@ -8,6 +8,7 @@
 
 export function createModalStore() {
     const listeners = new Set()
+    const pendingClose = new Set()
     let items = []
     let nextId = 0
 
@@ -31,18 +32,28 @@ export function createModalStore() {
             id,
             origin: options.origin instanceof Element ? options.origin : null,
             originStyle: options.originStyle ?? null,
+            closeOrigin: options.closeOrigin instanceof Element ? options.closeOrigin : null,
             title: options.title ?? '',
             description: options.description ?? '',
             confirmLabel: options.confirmLabel,
             cancelLabel: options.cancelLabel,
             variant: options.variant ?? 'neutral',
             dismissible: options.dismissible !== false,
+            gesture: options.gesture !== false,
             content: options.content ?? null,
             render: options.render ?? null,
             ariaLabel: options.ariaLabel ?? null,
             labelledBy: options.labelledBy ?? null,
+            morph: options.morph ?? null,
+            size: options.size ?? null,
+            placement: options.placement ?? 'center',
+            beforeClose: typeof options.beforeClose === 'function' ? options.beforeClose : null,
+            kind: options.kind ?? null,
+            placeholder: options.placeholder ?? '',
+            defaultValue: options.defaultValue ?? '',
             closing: false,
             result: undefined,
+            rev: 0,
         }]
         emit()
         return id
@@ -50,8 +61,25 @@ export function createModalStore() {
 
     function close(id, result) {
         const item = items.find((entry) => entry.id === id && !entry.closing)
-        if (!item) return
-        replace(id, { closing: true, result })
+        if (!item || pendingClose.has(id)) return
+
+        const finish = (allow) => {
+            pendingClose.delete(id)
+            const current = items.find((entry) => entry.id === id && !entry.closing)
+            if (!current) return
+            if (allow === false) return
+            replace(id, { closing: true, result })
+        }
+
+        if (typeof item.beforeClose !== 'function') {
+            finish(true)
+            return
+        }
+
+        pendingClose.add(id)
+        Promise.resolve(item.beforeClose(result)).then(finish, () => {
+            pendingClose.delete(id)
+        })
     }
 
     function closeTop(result) {
@@ -71,11 +99,23 @@ export function createModalStore() {
         emit()
     }
 
+    function update(id, patch = {}) {
+        const item = items.find((entry) => entry.id === id && !entry.closing)
+        if (!item) return
+        const next = { ...patch }
+        if (next.origin != null && !(next.origin instanceof Element)) next.origin = item.origin
+        if (next.closeOrigin != null && !(next.closeOrigin instanceof Element)) {
+            next.closeOrigin = item.closeOrigin
+        }
+        replace(id, { ...next, rev: item.rev + 1 })
+    }
+
     function remove(id) {
         const item = items.find((entry) => entry.id === id)
         const next = items.filter((entry) => entry.id !== id)
         if (next.length === items.length) return undefined
         items = next
+        pendingClose.delete(id)
         emit()
         return item?.result
     }
@@ -94,6 +134,7 @@ export function createModalStore() {
         close,
         closeTop,
         closeAll,
+        update,
         remove,
         get,
         subscribe,
