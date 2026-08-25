@@ -98,6 +98,17 @@ export class App {
         })
     }
 
+    protected noGesture(event: Event) {
+        return this.modal.open({
+            origin: originOf(event),
+            title: 'This one does not drag',
+            description: 'Escape and a click outside still close it. Pulling the card does nothing.',
+            confirmLabel: 'OK',
+            cancelLabel: null,
+            gesture: false,
+        })
+    }
+
     protected async openPlaylist(event: Event) {
         const name = await this.modal.openComponent<PlaylistForm, string>(
             PlaylistForm,

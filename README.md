@@ -93,6 +93,7 @@ modal.open({
 | `cancelLabel` | string \| null | `'Cancel'` | `null` hides the button. |
 | `variant` | string | `'neutral'` | `danger`, `success` and `warning` paint the confirm button. |
 | `dismissible` | boolean | `true` | Escape, overlay click, and drag-to-dismiss. |
+| `gesture` | boolean | `true` | Drag-to-dismiss. Ignored when `dismissible` is false. |
 | `placement` | string | `'center'` | `anchor` grows beside the origin, `inplace` expands on it, `bottom` is a sheet. |
 | `size` | string \| number | token | `'sm'` `'md'` `'lg'`, a pixel number, or any CSS max-width. |
 | `morph` | string \| object | configured | `'snappy'` `'floaty'` `'cinematic'`, or a patch of spring knobs. |
@@ -153,7 +154,7 @@ A modal *is* a modal: it blocks the page, traps tab inside the dialog (via
 `inert` on everything else), restores focus when it closes, and freezes scroll.
 `role="dialog"` and `aria-modal="true"` are set for you. A dialog with
 `dismissible: false` cannot be dismissed with Escape or a click outside, so
-give it a button.
+give it a button. `gesture: false` turns off drag-to-dismiss only.
 
 Under `prefers-reduced-motion: reduce` there is no morph. Dialogs appear and
 disappear in place.

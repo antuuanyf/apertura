@@ -107,6 +107,14 @@ const actions = {
         cancelLabel: 'Not now',
         dismissible: false,
     }),
+    'no-gesture': (origin) => modal.open({
+        origin,
+        title: 'This one does not drag',
+        description: 'Escape and a click outside still close it. Pulling the card does nothing.',
+        confirmLabel: 'OK',
+        cancelLabel: null,
+        gesture: false,
+    }),
     form: async (origin) => {
         const name = await modal.open({
             origin,
@@ -273,6 +281,7 @@ const actions = {
     sheet: (origin) => modal.open({
         origin,
         placement: 'bottom',
+        morph: 'snappy',
         title: 'Move to',
         description: 'Drag down to dismiss. The morph still starts from the button.',
         confirmLabel: 'Archive',

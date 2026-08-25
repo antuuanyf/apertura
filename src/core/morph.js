@@ -13,7 +13,9 @@
  * A pill button reports `border-radius: 999px`. Tweening that number toward
  * 32px looks like a pill for almost the whole flight — anything above half the
  * short side still clips to a capsule — then squares off at the end. The ratio
- * (0.5 → 0.16) is what actually changes shape while the box grows.
+ * (0.5 → 0.16) is what actually changes shape while the box grows. Corners are
+ * independent: a sheet's 32px top / 18px bottom is four ratios, not one
+ * shorthand, or settle snaps the bottom pair.
  *
  * Close settles when the springs rest, not when a 1100ms safety net fires, and
  * the origin is restored instantly while the shell still covers it so the
@@ -95,6 +97,35 @@ function effectiveRadius(cssValue, width, height) {
     return Math.min(Math.max(0, px), cap)
 }
 
+function splitRadiusShorthand(value) {
+    const raw = String(value ?? '').trim()
+    if (!raw || raw === 'none') return ['0px', '0px', '0px', '0px']
+    const parts = raw.split('/')[0].trim().split(/\s+/)
+    const a = parts[0]
+    const b = parts[1] ?? a
+    const c = parts[2] ?? a
+    const d = parts[3] ?? b
+    if (parts.length === 1) return [a, a, a, a]
+    if (parts.length === 2) return [a, b, a, b]
+    if (parts.length === 3) return [a, b, c, b]
+    return [a, b, c, d]
+}
+
+function cornerRoundness(computed, width, height, override = null) {
+    const m = minSide(width, height)
+    const ratio = (css) => effectiveRadius(css, width, height) / m
+    if (override != null && String(override).trim() !== '') {
+        const [tl, tr, br, bl] = splitRadiusShorthand(override)
+        return { tl: ratio(tl), tr: ratio(tr), br: ratio(br), bl: ratio(bl) }
+    }
+    return {
+        tl: ratio(computed.borderTopLeftRadius),
+        tr: ratio(computed.borderTopRightRadius),
+        br: ratio(computed.borderBottomRightRadius),
+        bl: ratio(computed.borderBottomLeftRadius),
+    }
+}
+
 function freezeSlot(dialogEl, shellEl, bodyEl) {
     const shellRect = shellEl.getBoundingClientRect()
     dialogEl.style.width = `${shellRect.width}px`
@@ -120,11 +151,14 @@ function clearFrozen(dialogEl, shellEl, bodyEl) {
     }
 }
 
-function paintShell(shellStyle, state) {
+function paintShell(shellStyle, state, fromRound, toRound) {
+    const m = minSide(state.width, state.height)
+    const t = state.roundT
+    const r = (a, b) => (a + (b - a) * t) * m
     shellStyle.transform = `translate(${state.x}px, ${state.y}px)`
     shellStyle.width = `${state.width}px`
     shellStyle.height = `${state.height}px`
-    shellStyle.borderRadius = `${state.roundness * minSide(state.width, state.height)}px`
+    shellStyle.borderRadius = `${r(fromRound.tl, toRound.tl)}px ${r(fromRound.tr, toRound.tr)}px ${r(fromRound.br, toRound.br)}px ${r(fromRound.bl, toRound.bl)}px`
 }
 
 function sizeSpring(config, { close = false } = {}) {
@@ -151,20 +185,17 @@ export function morphFromOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle
     const originComputed = getComputedStyle(origin)
     const fromBackground = originStyle?.background ?? originComputed.background
     const fromShadow = originStyle?.boxShadow ?? originComputed.boxShadow
-    const fromRoundness = effectiveRadius(
-        originStyle?.borderRadius ?? originComputed.borderRadius,
+    const fromRound = cornerRoundness(
+        originComputed,
         originRect.width,
         originRect.height,
-    ) / minSide(originRect.width, originRect.height)
+        originStyle?.borderRadius,
+    )
 
     const shellComputed = getComputedStyle(shellEl)
     const toBackground = shellComputed.background
     const toShadow = shellComputed.boxShadow
-    const toRoundness = effectiveRadius(
-        shellComputed.borderRadius,
-        shellRect.width,
-        shellRect.height,
-    ) / minSide(shellRect.width, shellRect.height)
+    const toRound = cornerRoundness(shellComputed, shellRect.width, shellRect.height)
     const startShadow = transparentShadow(toShadow)
 
     const fromX = originRect.left - shellRect.left
@@ -178,13 +209,13 @@ export function morphFromOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle
         y: fromY,
         width: originRect.width,
         height: originRect.height,
-        roundness: fromRoundness,
+        roundT: 0,
     }
 
     shellStyle.position = 'absolute'
     shellStyle.top = '0px'
     shellStyle.left = '0px'
-    paintShell(shellStyle, state)
+    paintShell(shellStyle, state, fromRound, toRound)
     shellStyle.background = fromBackground
     shellStyle.boxShadow = startShadow
     shellStyle.transition = 'none'
@@ -210,7 +241,7 @@ export function morphFromOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle
         bodyEl.style.opacity = '1'
     }
 
-    const pending = new Set(['x', 'y', 'width', 'height', 'roundness', 'contentScale', 'contentBlur'])
+    const pending = new Set(['x', 'y', 'width', 'height', 'roundT', 'contentScale', 'contentBlur'])
 
     const motion = createMotion(
         {
@@ -222,7 +253,7 @@ export function morphFromOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle
             onChange(key, value) {
                 if (key in state) {
                     state[key] = value
-                    paintShell(shellStyle, state)
+                    paintShell(shellStyle, state, fromRound, toRound)
                     return
                 }
                 if (key === 'contentScale' && bodyEl) bodyEl.style.transform = `scale(${value})`
@@ -243,7 +274,7 @@ export function morphFromOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle
             y: 0,
             width: shellRect.width,
             height: shellRect.height,
-            roundness: toRoundness,
+            roundT: 1,
             contentScale: 1,
             contentBlur: 0,
         },
@@ -252,7 +283,7 @@ export function morphFromOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle
             y: spring({ ...travel, direction: launchY }),
             width: size,
             height: size,
-            roundness: easing({ duration: config.radiusDuration, ease: roundnessEase(false) }),
+            roundT: easing({ duration: config.radiusDuration, ease: roundnessEase(false) }),
             contentScale: easing({ duration: config.contentDuration, ease: Easing.easeOut }),
             contentBlur: easing({ duration: config.contentDuration, ease: Easing.easeOut }),
         },
@@ -283,19 +314,16 @@ export function morphToOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle, 
     const originRect = origin.getBoundingClientRect()
     const originComputed = getComputedStyle(origin)
     const toBackground = originStyle?.background ?? originComputed.background
-    const toRoundness = effectiveRadius(
-        originStyle?.borderRadius ?? originComputed.borderRadius,
+    const toRound = cornerRoundness(
+        originComputed,
         originRect.width,
         originRect.height,
-    ) / minSide(originRect.width, originRect.height)
+        originStyle?.borderRadius,
+    )
 
     const shellComputed = getComputedStyle(shellEl)
     const fromShadow = shellComputed.boxShadow
-    const fromRoundness = effectiveRadius(
-        shellComputed.borderRadius,
-        shellRect.width,
-        shellRect.height,
-    ) / minSide(shellRect.width, shellRect.height)
+    const fromRound = cornerRoundness(shellComputed, shellRect.width, shellRect.height)
     const toShadow = transparentShadow(fromShadow)
 
     const toX = originRect.left - shellRect.left
@@ -309,13 +337,13 @@ export function morphToOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle, 
         y: 0,
         width: shellRect.width,
         height: shellRect.height,
-        roundness: fromRoundness,
+        roundT: 0,
     }
 
     shellStyle.position = 'absolute'
     shellStyle.top = '0px'
     shellStyle.left = '0px'
-    paintShell(shellStyle, state)
+    paintShell(shellStyle, state, fromRound, toRound)
     shellStyle.transition = 'none'
 
     if (bodyEl) {
@@ -336,7 +364,7 @@ export function morphToOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle, 
         bodyEl.style.opacity = '0'
     }
 
-    const pending = new Set(['x', 'y', 'width', 'height', 'roundness', 'contentScale', 'contentBlur'])
+    const pending = new Set(['x', 'y', 'width', 'height', 'roundT', 'contentScale', 'contentBlur'])
 
     const motion = createMotion(
         {
@@ -348,7 +376,7 @@ export function morphToOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle, 
             onChange(key, value) {
                 if (key in state) {
                     state[key] = value
-                    paintShell(shellStyle, state)
+                    paintShell(shellStyle, state, fromRound, toRound)
                     return
                 }
                 if (key === 'contentScale' && bodyEl) bodyEl.style.transform = `scale(${value})`
@@ -375,7 +403,7 @@ export function morphToOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle, 
             y: toY,
             width: originRect.width,
             height: originRect.height,
-            roundness: toRoundness,
+            roundT: 1,
             contentScale: config.contentScale,
             contentBlur: config.contentBlur,
         },
@@ -384,7 +412,7 @@ export function morphToOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle, 
             y: spring({ ...travel, direction: launchY }),
             width: size,
             height: size,
-            roundness: easing({ duration: config.radiusDuration, ease: roundnessEase(true) }),
+            roundT: easing({ duration: config.radiusDuration, ease: roundnessEase(true) }),
             contentScale: easing({ duration: config.closeContentDuration, ease: Easing.easeInCubic }),
             contentBlur: easing({ duration: config.closeContentDuration, ease: Easing.easeInCubic }),
         },

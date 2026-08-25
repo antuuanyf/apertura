@@ -48,7 +48,7 @@ export function attachDismissGesture({
     function onPointerDown(event) {
         if (event.button != null && event.button !== 0) return
         const current = store.get(item.id) ?? item
-        if (isBusy?.() || !current.dismissible) return
+        if (isBusy?.() || !current.dismissible || current.gesture === false) return
         if (event.target instanceof Element && event.target.closest(IGNORE)) return
         const scroller = event.target instanceof Element
             ? event.target.closest('.apr-body, .apr-card')

@@ -39,6 +39,7 @@ export function createModalStore() {
             cancelLabel: options.cancelLabel,
             variant: options.variant ?? 'neutral',
             dismissible: options.dismissible !== false,
+            gesture: options.gesture !== false,
             content: options.content ?? null,
             render: options.render ?? null,
             ariaLabel: options.ariaLabel ?? null,

@@ -195,6 +195,9 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
 
     function attachGesture(node, item) {
         node.detachGesture?.()
+        node.detachGesture = null
+        const current = store.get(item.id) ?? item
+        if (current.gesture === false) return
         node.detachGesture = attachDismissGesture({
             dialog: node.dialog,
             item,
@@ -206,33 +209,214 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
         })
     }
 
-    function springHeight(node, from) {
-        const shell = node.shell
-        const to = {
-            width: shell.getBoundingClientRect().width,
-            height: shell.getBoundingClientRect().height,
+    const LAYOUT_KEYS = ['apr-title', 'apr-description', 'apr-input', 'apr-actions']
+    const SIZE_SPRING = { stiffness: 180, damping: 22, velocity: 0, restDelta: 0.5, restSpeed: 4 }
+
+    function rectOf(el, shellRect) {
+        const r = el.getBoundingClientRect()
+        return {
+            width: r.width,
+            height: r.height,
+            top: r.top - shellRect.top,
+            left: r.left - shellRect.left,
         }
-        if (Math.abs(from.width - to.width) < 1 && Math.abs(from.height - to.height) < 1) return
+    }
+
+    function snapshotLayout(body, shell) {
+        const shellRect = shell.getBoundingClientRect()
+        const shot = {}
+        for (const key of LAYOUT_KEYS) {
+            const el = body.querySelector(`.${key}`)
+            if (el) shot[key] = rectOf(el, shellRect)
+        }
+        if (Object.keys(shot).length > 0) return shot
+        const card = body.querySelector('.apr-card') ?? body
+        ;[...card.children].forEach((el, i) => {
+            shot[`n${i}`] = rectOf(el, shellRect)
+        })
+        return shot
+    }
+
+    function findLayoutEl(body, key) {
+        if (!key.startsWith('n')) return body.querySelector(`.${key}`)
+        const card = body.querySelector('.apr-card') ?? body
+        return card.children[Number(key.slice(1))] ?? null
+    }
+
+    function pinContent(node, width) {
+        const body = node.body
+        body.style.alignSelf = 'flex-start'
+        body.style.width = `${width}px`
+        body.style.flex = '0 0 auto'
+    }
+
+    function unpinContent(node) {
+        const body = node.body
+        body.style.alignSelf = ''
+        body.style.width = ''
+        body.style.flex = ''
+    }
+
+    function unpinLayout(node) {
+        for (const el of node.layoutPins ?? []) {
+            el.style.height = ''
+            el.style.overflow = ''
+            el.style.flexShrink = ''
+            el.style.boxSizing = ''
+            el.style.transform = ''
+        }
+        node.layoutPins = []
+    }
+
+    function stopSizeMotion(node) {
+        node.sizeMotion?.stop()
+        node.sizeMotion = null
+        unpinContent(node)
+        unpinLayout(node)
+    }
+
+    function clearShellSize(node) {
+        node.shell.style.width = ''
+        node.shell.style.height = ''
+    }
+
+    function relayout(node) {
+        if (node.placement === 'center' || node.leaving || !node.origin) return
+        layoutSlot(node.dialog, node.itemEl, node.origin, node.placement, {
+            gap: config.placementGap,
+            padding: config.placementPadding,
+        })
+    }
+
+    function measureTargets(node) {
+        const shell = node.shell
+        const prevWidth = shell.style.width
+        const prevHeight = shell.style.height
+        shell.style.width = ''
+        shell.style.height = ''
+        const rect = shell.getBoundingClientRect()
+        const layout = snapshotLayout(node.body, shell)
+        shell.style.width = prevWidth
+        shell.style.height = prevHeight
+        return { width: rect.width, height: rect.height, layout }
+    }
+
+    function pinLayoutEl(el, height) {
+        el.style.boxSizing = 'border-box'
+        el.style.height = `${height}px`
+        el.style.overflow = 'hidden'
+        el.style.flexShrink = '0'
+    }
+
+    function springHeight(node, from, fromLayout = {}) {
+        stopSizeMotion(node)
+        const shell = node.shell
+        const body = node.body
+        const to = measureTargets(node)
+        const keys = new Set([...Object.keys(fromLayout), ...Object.keys(to.layout)])
+
+        const heightHops = []
+        for (const key of keys) {
+            const el = findLayoutEl(body, key)
+            const prev = fromLayout[key]
+            const next = to.layout[key]
+            if (!el || !next) continue
+            const start = prev?.height ?? 0
+            if (Math.abs(start - next.height) < 1) continue
+            heightHops.push({ el, key, from: start, to: next.height })
+        }
+
+        const sizeChanged = Math.abs(from.width - to.width) >= 1
+            || Math.abs(from.height - to.height) >= 1
+        if (!sizeChanged && heightHops.length === 0) {
+            clearShellSize(node)
+            return
+        }
+
+        if (prefersReducedMotion()) {
+            clearShellSize(node)
+            relayout(node)
+            return
+        }
+
+        pinContent(node, to.width)
+        node.layoutPins = []
+        for (const hop of heightHops) {
+            pinLayoutEl(hop.el, hop.from)
+            node.layoutPins.push(hop.el)
+        }
+
+        void body.offsetHeight
+        const shellRect = shell.getBoundingClientRect()
+        const shiftHops = []
+        for (const key of keys) {
+            const el = findLayoutEl(body, key)
+            const prev = fromLayout[key]
+            if (!el || !prev) continue
+            const now = rectOf(el, shellRect)
+            const dx = prev.left - now.left
+            const dy = prev.top - now.top
+            if (Math.abs(dx) < 1 && Math.abs(dy) < 1) continue
+            if (!node.layoutPins.includes(el)) node.layoutPins.push(el)
+            shiftHops.push({ el, key, x: dx, y: dy })
+        }
 
         shell.style.width = `${from.width}px`
         shell.style.height = `${from.height}px`
-        node.sizeMotion?.stop()
-        const pending = new Set(['width', 'height'])
-        const motion = createMotion({ width: from.width, height: from.height }, {
+
+        const initial = { width: from.width, height: from.height }
+        const targets = { width: to.width, height: to.height }
+        const heights = Object.fromEntries(heightHops.map((hop) => [`h:${hop.key}`, hop.el]))
+        const shifts = new Map()
+        for (const hop of heightHops) {
+            initial[`h:${hop.key}`] = hop.from
+            targets[`h:${hop.key}`] = hop.to
+        }
+        for (const hop of shiftHops) {
+            initial[`x:${hop.key}`] = hop.x
+            initial[`y:${hop.key}`] = hop.y
+            targets[`x:${hop.key}`] = 0
+            targets[`y:${hop.key}`] = 0
+            shifts.set(hop.el, { x: hop.x, y: hop.y })
+            hop.el.style.transform = `translate(${hop.x}px, ${hop.y}px)`
+        }
+
+        const shiftByChannel = {}
+        for (const hop of shiftHops) {
+            shiftByChannel[`x:${hop.key}`] = hop.el
+            shiftByChannel[`y:${hop.key}`] = hop.el
+        }
+
+        const pending = new Set(Object.keys(targets))
+        const hop = spring(SIZE_SPRING)
+        const transitions = Object.fromEntries([...pending].map((key) => [key, hop]))
+        const motion = createMotion(initial, {
             onChange(key, value) {
-                shell.style[key] = `${value}px`
+                if (key === 'width' || key === 'height') {
+                    shell.style[key] = `${value}px`
+                } else if (key.startsWith('h:')) {
+                    heights[key].style.height = `${value}px`
+                } else {
+                    const el = shiftByChannel[key]
+                    const state = el && shifts.get(el)
+                    if (state) {
+                        if (key.startsWith('x:')) state.x = value
+                        else state.y = value
+                        el.style.transform = `translate(${state.x}px, ${state.y}px)`
+                    }
+                }
+                relayout(node)
             },
             onSettle(key) {
                 pending.delete(key)
                 if (pending.size > 0 || node.sizeMotion !== motion) return
-                shell.style.width = ''
-                shell.style.height = ''
-                node.sizeMotion = null
+                stopSizeMotion(node)
+                clearShellSize(node)
+                relayout(node)
             },
         })
         node.sizeMotion = motion
-        const hop = spring({ stiffness: 180, damping: 22, velocity: 0, restDelta: 0.5, restSpeed: 4 })
-        motion.animate({ width: to.width, height: to.height }, { width: hop, height: hop })
+        motion.animate(targets, transitions)
     }
 
     function refresh(item) {
@@ -241,6 +425,7 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
         if (node.rev === item.rev) return
         node.rev = item.rev
 
+        const fromLayout = snapshotLayout(node.body, node.shell)
         const from = {
             width: node.shell.getBoundingClientRect().width,
             height: node.shell.getBoundingClientRect().height,
@@ -257,7 +442,7 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
         place(node, item)
         startTracking(node, item)
         attachGesture(node, item)
-        springHeight(node, from)
+        springHeight(node, from, fromLayout)
     }
 
     function enter(item) {
@@ -315,6 +500,7 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
             dragging: false,
             morph: null,
             sizeMotion: null,
+            layoutPins: [],
             untrack: null,
             detachGesture: null,
             closeTarget: null,
@@ -375,8 +561,7 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
         restack()
         node.detachGesture?.()
         node.detachGesture = null
-        node.sizeMotion?.stop()
-        node.sizeMotion = null
+        stopSizeMotion(node)
 
         const { overlay, dialog, shell, body, origin, originHidden } = node
         const morphOptions = morphFor(item)
@@ -466,7 +651,7 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
             node.morph?.settle()
             node.untrack?.()
             node.detachGesture?.()
-            node.sizeMotion?.stop()
+            stopSizeMotion(node)
             node.cleanupContent?.()
             if (node.originHidden && node.origin) restoreOrigin(node.origin)
             killMotion(node.overlay)

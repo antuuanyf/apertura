@@ -13,6 +13,7 @@
     --apr-fg: #1b1b1f;
     --apr-muted: #5c5c66;
     --apr-radius: 32px;
+    --apr-sheet-radius: 18px;
     --apr-shadow: 0 8px 40px rgba(0, 0, 0, 0.18), 0 0 1px rgba(0, 0, 0, 0.22);
     --apr-padding: 28px 28px 24px;
     --apr-max-width: min(440px, calc(100vw - 32px));
@@ -105,8 +106,8 @@
 }
 
 .apr-sheet .apr-shell {
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 18px;
+    border-bottom-left-radius: var(--apr-sheet-radius);
+    border-bottom-right-radius: var(--apr-sheet-radius);
 }
 
 .apr-shell {

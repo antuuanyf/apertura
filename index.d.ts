@@ -76,6 +76,8 @@ export interface ModalOpenOptions {
     variant?: ModalVariant
     /** Escape, overlay click, and drag-to-dismiss. Default true. */
     dismissible?: boolean
+    /** Drag-to-dismiss. Default true. Ignored when `dismissible` is false. */
+    gesture?: boolean
     labelledBy?: string
     ariaLabel?: string
     /** Takes over the body. An element is moved in; a string is HTML. */
