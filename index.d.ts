@@ -20,6 +20,7 @@ export interface MorphOptions {
     closeSizeDamping?: number
     closeVelocity?: number
     closeContentDuration?: number
+    closeHandoffDuration?: number
     closeMaxDuration?: number
     closeRestDelta?: number
     closeRestSpeed?: number

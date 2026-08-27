@@ -17,9 +17,8 @@
  * independent: a sheet's 32px top / 18px bottom is four ratios, not one
  * shorthand, or settle snaps the bottom pair.
  *
- * Close settles when the springs rest, not when a 1100ms safety net fires, and
- * the origin is restored instantly while the shell still covers it so the
- * button is labelled and clickable the moment the dialog is gone.
+ * Close settles when the springs rest, not when a 1100ms safety net fires, then
+ * crossfades the restored origin under the landed shell before teardown.
  */
 
 import { createMotion, spring, easing } from './motion/engine.js'
@@ -46,7 +45,11 @@ export const MORPH_DEFAULTS = {
     closeSizeDamping: 26,
     closeVelocity: 1400,
     closeContentDuration: 0.16,
-    closeMaxDuration: 480,
+    /** Crossfade the landed shell into the restored origin. */
+    closeHandoffDuration: 0.18,
+    // The size spring needs longer than the content fade to settle at pixel
+    // scale. Keep the safety net behind the normal reverse-morph handoff.
+    closeMaxDuration: 900,
     closeRestDelta: 0.8,
     closeRestSpeed: 8,
 }
@@ -58,7 +61,7 @@ export function hideOrigin(element) {
     element.style.pointerEvents = 'none'
 }
 
-export function restoreOrigin(element, { instant = false } = {}) {
+export function restoreOrigin(element, { instant = false, duration = 300 } = {}) {
     if (!(element instanceof HTMLElement)) return
     if (instant) {
         element.style.transition = 'none'
@@ -66,10 +69,11 @@ export function restoreOrigin(element, { instant = false } = {}) {
         element.style.pointerEvents = ''
         return
     }
-    element.style.transition = 'opacity 300ms ease'
+    const durationMs = Math.max(0, Number(duration) || 0)
+    element.style.transition = `opacity ${durationMs}ms ease`
     element.style.opacity = ''
     element.style.pointerEvents = ''
-    setTimeout(() => { element.style.transition = '' }, 320)
+    setTimeout(() => { element.style.transition = '' }, durationMs + 20)
 }
 
 function transparentShadow(shadow) {
@@ -139,7 +143,7 @@ function freezeSlot(dialogEl, shellEl, bodyEl) {
 
 function clearFrozen(dialogEl, shellEl, bodyEl) {
     for (const property of ['position', 'top', 'left', 'width', 'height', 'borderRadius',
-        'background', 'boxShadow', 'transform', 'transition']) {
+        'background', 'boxShadow', 'transform', 'transition', 'opacity']) {
         shellEl.style[property] = ''
     }
     dialogEl.style.width = ''
@@ -324,10 +328,16 @@ export function morphToOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle, 
     const shellComputed = getComputedStyle(shellEl)
     const fromShadow = shellComputed.boxShadow
     const fromRound = cornerRoundness(shellComputed, shellRect.width, shellRect.height)
-    const toShadow = transparentShadow(fromShadow)
+    const originShadow = originStyle?.boxShadow ?? originComputed.boxShadow
+    // A real origin shadow is part of the visual handoff. Fall back to a
+    // transparent copy only when the origin has no shadow, because CSS cannot
+    // interpolate a shadow list to `none`.
+    const toShadow = originShadow && originShadow !== 'none'
+        ? originShadow
+        : transparentShadow(fromShadow)
 
-    const toX = originRect.left - shellRect.left
-    const toY = originRect.top - shellRect.top
+    let toX = originRect.left - shellRect.left
+    let toY = originRect.top - shellRect.top
     const launchX = Math.sign(toX) || 1
     const launchY = Math.sign(toY) || 1
 
@@ -420,14 +430,17 @@ export function morphToOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle, 
 
     let settled = false
     const safety = setTimeout(() => settle(), config.closeMaxDuration)
+    const handoffDuration = Math.max(0, Number(config.closeHandoffDuration) || 0)
 
     function retarget(nextOrigin) {
         if (settled || !(nextOrigin instanceof HTMLElement) || !nextOrigin.isConnected) return
         const next = nextOrigin.getBoundingClientRect()
+        toX = next.left - shellRect.left
+        toY = next.top - shellRect.top
         motion.animate(
             {
-                x: next.left - shellRect.left,
-                y: next.top - shellRect.top,
+                x: toX,
+                y: toY,
             },
             {
                 x: spring({ ...travel, velocity: 0 }),
@@ -440,12 +453,35 @@ export function morphToOrigin({ dialogEl, shellEl, bodyEl, origin, originStyle, 
         if (settled) return
         settled = true
         clearTimeout(safety)
-        // Origin first, while the shell still covers it. Then the host unmounts
-        // the shell and the button is already labelled and clickable.
-        restoreOrigin(origin, { instant: true })
         motion.stop()
-        clearFrozen(dialogEl, shellEl, bodyEl)
-        onSettle?.()
+        // Land exact before the handoff. This is a no-op after a normal spring
+        // settle, but keeps the safety path from exposing a mid-spring shell.
+        state.x = toX
+        state.y = toY
+        state.width = originRect.width
+        state.height = originRect.height
+        state.roundT = 1
+        paintShell(shellStyle, state, fromRound, toRound)
+
+        if (handoffDuration <= 0) {
+            restoreOrigin(origin, { instant: true })
+            clearFrozen(dialogEl, shellEl, bodyEl)
+            onSettle?.()
+            return
+        }
+
+        // Restore the origin under the landed shell, then crossfade both
+        // layers. Keep the shell frozen until the fade has painted.
+        restoreOrigin(origin, { duration: handoffDuration * 1000 })
+        shellStyle.transition = 'none'
+        shellStyle.opacity = '1'
+        void shellEl.offsetWidth
+        shellStyle.transition = `opacity ${handoffDuration}s ease-out`
+        shellStyle.opacity = '0'
+        setTimeout(() => {
+            clearFrozen(dialogEl, shellEl, bodyEl)
+            onSettle?.()
+        }, handoffDuration * 1000 + 20)
     }
 
     return { settle, retarget }

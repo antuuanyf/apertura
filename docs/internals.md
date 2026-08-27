@@ -53,9 +53,9 @@ the dialog; the morph owns the shell. They never touch each other's.
 ## Open vs close
 
 Toasts restore the origin when the morph *lands*. A dialog is the opposite:
-the origin stays hidden for the whole life of the modal, and only comes back
-when the reverse morph covers it (or when a fade-out has started, if there is
-no origin left to fly into).
+the origin stays hidden for the whole life of the modal, then crossfades under
+the landed shell during the final handoff (or during a fade-out if there is no
+origin left to fly into).
 
 If the origin has been unmounted, disconnected, or has a zero rect (display
 none, off-screen collapsed), close falls back to a fade. Same if the user
@@ -83,7 +83,9 @@ is a sibling of the dialog, not a child of a transformed toast.
 
 A new item is a new full-screen stack. The one underneath scales to
 `underScale` (0.96) and drops `underY` pixels, and goes `inert`. Only the top
-dialog is in the tab order. Closing the top one puts the one below back.
+dialog is in the tab order. When the top one closes by reverse morph, the one
+below stays put until that morph and its handoff finish; then the stack
+restores it.
 
 ## Gotchas already paid for
 
@@ -116,11 +118,11 @@ dialog is in the tab order. Closing the top one puts the one below back.
    drops below half the short side, which is the last frames, then a snap.
    Morph a *ratio* of `min(width, height)` instead, in lockstep with size.
 
-10. **Restore the origin instantly, under the arriving shell.** Waiting for
-    `maxDuration` (1100ms) then fading opacity over 300ms left the button
-    unlabelled and unclickable after the dialog had already visually gone.
-    Close settles when the springs rest (with pixel-scale restDelta), restores
-    `opacity`/`pointer-events` with no transition, then unmounts.
+10. **Restore the origin under the landed shell.** Waiting for `maxDuration`
+    (1100ms) then fading opacity over 300ms left the button unlabelled and
+    unclickable after the dialog had already visually gone. Close settles when
+    the springs rest (with pixel-scale restDelta), crossfades the restored
+    origin with the frozen shell, then unmounts.
 
 11. **Unfreeze the shell before measuring an `update()` target.** `refresh()`
     pins width/height so the new copy does not flash at full size. Measuring

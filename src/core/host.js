@@ -524,7 +524,7 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
             node.morph = null
             startTracking(node, item)
             attachGesture(node, item)
-            restack()
+            if (!node.leaving) restack()
             const latest = store.get(item.id)
             if (latest && !latest.closing && latest.rev !== node.rev) refresh(latest)
             if (!node.leaving) focusFirst(dialog)
@@ -558,7 +558,6 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
         node.morph?.settle()
         node.morph = null
         node.morphing = false
-        restack()
         node.detachGesture?.()
         node.detachGesture = null
         stopSizeMotion(node)
@@ -567,6 +566,12 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
         const morphOptions = morphFor(item)
         const closeTarget = canMorphFrom(item.closeOrigin) ? item.closeOrigin : origin
         const reverse = originHidden && canMorphFrom(closeTarget)
+        const handoffDuration = reverse
+            ? Math.max(0, Number(morphOptions.closeHandoffDuration) || 0)
+            : 0
+        // Keep an underlying dialog at its current stack scale while the
+        // closing shell measures and flies into an origin inside it.
+        if (!reverse) restack()
         node.closeTarget = closeTarget
 
         let finished = false
@@ -588,7 +593,10 @@ export function createModalHost({ store, options = {}, mountTo = 'body' } = {}) 
             else restack()
             onRemoved?.(item.id, result)
         }
-        const safety = setTimeout(finish, (morphOptions.closeMaxDuration ?? 480) + 80)
+        const safety = setTimeout(
+            finish,
+            (morphOptions.closeMaxDuration ?? 480) + handoffDuration * 1000 + 80,
+        )
 
         fadeOverlay(overlay, 0, reverse ? config.overlayDuration * 0.8 : config.exitDuration)
 
